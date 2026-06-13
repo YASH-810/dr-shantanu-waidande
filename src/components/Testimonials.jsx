@@ -175,10 +175,15 @@ const Testimonials = () => {
           </p>
         </div>
 
-        {/* Video Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-8 justify-center">
+        {/* Video Slider */}
+        <div 
+          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-4 md:px-0 md:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollBehavior: 'smooth' }}
+        >
           {testimonials.map((t) => (
-            <VideoCard key={t.id} testimonial={t} />
+            <div key={t.id} className="snap-center shrink-0 w-[80vw] max-w-[320px]">
+              <VideoCard testimonial={t} />
+            </div>
           ))}
         </div>
 
