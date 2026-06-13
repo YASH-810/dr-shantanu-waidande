@@ -152,6 +152,28 @@ const VideoCard = ({ testimonial }) => {
 }
 
 const Testimonials = () => {
+  const sliderRef = useRef(null)
+  const [isDown, setIsDown] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
+
+  const handleMouseDown = (e) => {
+    setIsDown(true)
+    setStartX(e.pageX - sliderRef.current.offsetLeft)
+    setScrollLeft(sliderRef.current.scrollLeft)
+  }
+  const handleMouseLeaveSlider = () => setIsDown(false)
+  const handleMouseUp = () => setIsDown(false)
+  const handleMouseMove = (e) => {
+    if (!isDown) return
+    e.preventDefault()
+    const x = e.pageX - sliderRef.current.offsetLeft
+    const walk = (x - startX) * 2
+    if (sliderRef.current) {
+      sliderRef.current.scrollLeft = scrollLeft - walk
+    }
+  }
+
   return (
     <section id="testimonials" className="relative bg-background overflow-hidden py-24 px-6 border-t border-muted/50">
       
@@ -177,12 +199,19 @@ const Testimonials = () => {
 
         {/* Video Slider */}
         <div 
-          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-4 md:px-0 md:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ scrollBehavior: 'smooth' }}
+          ref={sliderRef}
+          className={`flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-4 md:px-0 md:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${isDown ? 'cursor-grabbing snap-none' : 'cursor-grab'}`}
+          style={{ scrollBehavior: isDown ? 'auto' : 'smooth' }}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeaveSlider}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
         >
           {testimonials.map((t) => (
-            <div key={t.id} className="snap-center shrink-0 w-[80vw] max-w-[320px]">
-              <VideoCard testimonial={t} />
+            <div key={t.id} className="snap-center shrink-0 w-[80vw] max-w-[320px] pointer-events-none sm:pointer-events-auto">
+              <div className="pointer-events-auto">
+                <VideoCard testimonial={t} />
+              </div>
             </div>
           ))}
         </div>
