@@ -1,0 +1,2710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Register - Billing and Session Records</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --primary-light: #e3f2fd;
+            --accent: #007bff;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --border: #dee2e6;
+            --text-dark: #343a40;
+            --shadow: 0 4px 6px rgba(0,0,0,0.08);
+            --hospital-bg: #e2e3e5;
+            --hospital-text: #383d41;
+            --direct-bg: #d4edda;
+            --direct-text: #155724;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 80px; }
+
+        /* Header */
+        header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 1rem; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
+        .header-content { position: relative; max-width: 1400px; margin: 0 auto; }
+        .header-actions { position: absolute; top: 0; left: 0; }
+        
+        h1 { margin: 0; font-size: 1.3rem; font-weight: 700; }
+        p.subtitle { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+        /* Hamburger Menu */
+        .btn-hamburger {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); 
+            color: white; font-size: 1.5rem; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 999; animation: fadeIn 0.2s;
+        }
+        .sidebar {
+            position: absolute; top: 0; left: 0; height: 100%; width: 280px; background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+            animation: slideInLeft 0.3s;
+        }
+        @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+        .sidebar-header {
+            background: var(--primary); color: white; padding: 1.5rem 1rem 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .sidebar-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        .sidebar-content { padding: 1rem 0; overflow-y: auto; flex: 1; }
+        .menu-section { padding: 0 1rem 1.5rem; }
+        .menu-section h4 { margin: 0 0 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--secondary); font-weight: 700; letter-spacing: 0.5px; }
+        
+        .sidebar-link {
+            display: block; width: 100%; text-align: left; background: none; border: none; padding: 12px 15px;
+            font-size: 1rem; color: var(--text-dark); cursor: pointer; border-radius: 4px;
+        }
+        .sidebar-link:hover { background: var(--bg-light); color: var(--accent); }
+        .sidebar-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; border-left: 3px solid var(--primary); }
+        .sidebar-link.danger { color: var(--danger); }
+
+        /* Navigation */
+        nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); z-index: 99; border-top: 1px solid var(--border); }
+        .nav-btn { background: none; border: none; flex: 1; padding: 10px; color: var(--secondary); font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
+        .nav-btn.active { color: var(--accent); }
+        .nav-btn svg { width: 22px; height: 22px; margin-bottom: 4px; fill: currentColor; }
+
+        /* Main Content */
+        main { padding: 1rem; max-width: 1400px; margin: 0 auto; display: none; }
+        main.active-view { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Layout */
+        .card { background: white; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+        .section-header h2 { margin: 0; font-size: 1.1rem; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 10px; }
+        
+        /* Buttons */
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--primary); }
+        .btn-primary:disabled { background: #999; cursor: not-allowed; opacity: 0.6; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
+        .btn-outline:hover { background: #f1f1f1; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: #212529; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
+        .btn-block { width: 100%; }
+
+        /* Tables */
+        .table-wrapper { overflow-x: auto; border-radius: 6px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 0.9rem; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: 600; cursor: pointer; user-select: none; }
+        th:hover { background-color: #e9ecef; }
+        th::after { content: ' ↕'; font-size: 0.6rem; opacity: 0.4; margin-left: 5px; }
+        tr:hover { background-color: #f1f3f5; }
+        .cell-wrap { white-space: normal; max-width: 250px; }
+
+        /* Pagination Controls */
+        .pagination-controls {
+            display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;
+            align-items: center; padding-top: 10px; border-top: 1px solid var(--border);
+            font-size: 0.85rem; color: var(--secondary);
+        }
+        .pagination-info { font-weight: 600; }
+
+        /* Filters */
+        .filter-panel { background: var(--primary-light); padding: 10px; border-radius: 6px; margin-bottom: 1rem; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border: 1px solid #bbdefb; }
+        .filter-group { display: flex; flex-direction: column; gap: 2px; }
+        .filter-group label { font-size: 0.7rem; font-weight: 700; color: var(--primary); }
+        .form-control { padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; }
+        select.form-control { background: white; }
+
+        /* Stats Dashboard */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+        .stat-card { background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .stat-label { font-size: 0.8rem; color: var(--secondary); margin-top: 4px; }
+
+        /* Dashboard Layout */
+        .dashboard-split { display: grid; grid-template-columns: 300px 1fr; gap: 1rem; }
+        .patient-selector-card { grid-column: 1; }
+        .patient-details-card { grid-column: 2; }
+        
+        @media (max-width: 900px) {
+            .dashboard-split { grid-template-columns: 1fr; }
+            .patient-selector-card { grid-column: 1; margin-bottom: 1rem; }
+            .patient-details-card { grid-column: 1; }
+        }
+
+        /* Forms & Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
+        .modal { background: white; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-header { padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; border-radius: 8px 8px 0 0; }
+        .modal-body { padding: 1rem; overflow-y: auto; }
+        .modal-footer { padding: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+
+        /* Tabs in Patient Details */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: var(--secondary); }
+        .tab.active { border-bottom-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Tags */
+        .tag { padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .tag.Completed, .tag.completed { background: #d4edda; color: #155724; }
+        .tag.Pending, .tag.pending { background: #fff3cd; color: #856404; }
+        .tag.Active, .tag.active { background: #cce5ff; color: #004085; }
+        .tag.Direct { background: var(--direct-bg); color: var(--direct-text); }
+        .tag.Hospital { background: var(--hospital-bg); color: var(--hospital-text); }
+
+        /* Session Selector in Income Modal */
+        .session-selector-box {
+            background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; margin-bottom: 1rem;
+            max-height: 150px; overflow-y: auto; font-size: 0.85rem;
+        }
+        .session-checkbox-item {
+            display: flex; align-items: center; margin-bottom: 5px; cursor: pointer; padding: 4px; border-radius: 4px;
+        }
+        .session-checkbox-item:hover { background: #e9ecef; }
+        .session-checkbox-item input { margin-right: 10px; transform: scale(1.2); }
+
+        /* Invoice Specific */
+        .invoice-text-area {
+            width: 100%; height: 120px; font-family: monospace; background: #f8f9fa; border: 1px solid #ccc; padding: 10px; border-radius: 4px; font-size: 0.85rem; resize: vertical;
+            white-space: pre;
+        }
+        
+        /* Copy Text Modal Specific */
+        .copy-text-area {
+            width: 100%; height: 250px; font-family: monospace; background: #f1f3f5; border: 1px solid var(--border); padding: 10px; border-radius: 4px; font-size: 0.9rem; resize: none;
+            white-space: pre; line-height: 1.5;
+        }
+
+        /* Toasts */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .toast { background: #333; color: white; padding: 12px 20px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s; display: flex; align-items: center; justify-content: space-between; min-width: 250px; font-size: 0.9rem; }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
+        .toast.info { background: var(--accent); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Button Group */
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        @media (min-width: 768px) {
+            .modal { width: auto; min-width: 500px; }
+        }
+    
+/* =========================================================
+   COMBINED RECEIPT BUILDER
+   ========================================================= */
+.receipt-page-view { max-width:none !important; padding:0 !important; height:calc(100vh - 128px); overflow:hidden; background:#334155; }
+.receipt-page-view.active-view { display:flex !important; flex-direction:column; }
+.receipt-toolbar { background:#fff; border-bottom:1px solid var(--border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; flex-shrink:0; }
+.receipt-toolbar h2 { margin:0; font-size:1rem; color:var(--primary); }
+.receipt-toolbar span { font-size:.75rem; color:var(--secondary); }
+.receipt-workspace { display:flex; flex:1; min-height:0; overflow:hidden; }
+.receipt-editor { width:390px; background:#fff; border-right:1px solid var(--border); flex-shrink:0; }
+.receipt-scroll { height:100%; overflow-y:auto; padding:1rem; }
+.receipt-preview-panel { flex:1; min-width:0; overflow:auto; padding:2rem; display:flex; align-items:center; justify-content:center; background:#334155; }
+.receipt-paper { width:210mm; height:148mm; min-width:210mm; background:#fff; padding:10mm; box-shadow:0 10px 30px rgba(0,0,0,.45); display:flex; flex-direction:column; font-family:Arial,sans-serif; }
+.receipt-header-r { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; text-transform:uppercase; }
+.receipt-doc-left { text-align:left; display:flex; flex-direction:column; gap:3px; }
+.receipt-title-r { text-align:right; font-weight:900; font-size:20pt; letter-spacing:2px; }
+.receipt-doc-name { font-size:15pt; font-weight:bold; line-height:1.3; }
+.receipt-doc-qual { font-size:11pt; line-height:1.3; }
+.receipt-doc-reg { font-size:9pt; font-style:italic; line-height:1.3; }
+.receipt-divider-r { border-top:2px solid #000; margin-bottom:15px; }
+.receipt-body-r { font-size:12.5pt; line-height:1.5; flex:1; }
+.receipt-patient-row { display:flex; justify-content:space-between; margin-bottom:15px; gap:20px; }
+.receipt-patient-row>div { flex:1; }
+.receipt-right { text-align:right; }
+.receipt-mobile { margin-top:5px; }
+.receipt-middle-r { margin-top:10px; margin-bottom:20px; }
+.receipt-bill-row { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12.5pt; }
+.receipt-service-table { width:100%; border-collapse:collapse; font-size:12pt; }
+.receipt-service-table th { text-align:left; border-bottom:1px solid #000; padding:5px 2px; font-weight:bold; background:#fff; color:#000; cursor:default; }
+.receipt-service-table th::after { content:''; }
+.receipt-service-table th:nth-child(2) { text-align:center; width:80px; }
+.receipt-service-table th:nth-child(3) { text-align:right; width:100px; }
+.receipt-service-table td { border-bottom:1px dashed #ccc; padding:5px 2px; vertical-align:top; white-space:normal; }
+.receipt-service-table td:nth-child(2) { text-align:center; }
+.receipt-service-table td:nth-child(3) { text-align:right; }
+.receipt-custom-r { margin-top:8px; font-size:11pt; font-style:italic; color:#444; }
+.receipt-footer-r { display:flex; justify-content:space-between; align-items:flex-end; font-size:11pt; margin-top:auto; }
+.receipt-footer-left { display:flex; flex-direction:column; gap:15px; align-items:flex-start; flex:1; padding-right:20px; }
+.receipt-amount-box { border:2px solid #000; padding:4px 8px; display:inline-block; font-weight:bold; font-size:11pt; min-width:120px; text-align:right; margin-top:4px; }
+.receipt-sum { font-size:11pt; color:#333; line-height:1.4; }
+.receipt-sign { width:220px; text-align:right; display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
+.receipt-sign-line { width:100%; height:50px; border-bottom:1px solid #000; margin-bottom:5px; }
+.receipt-footer-doc { font-weight:bold; text-transform:uppercase; font-size:7pt; }
+@media print {
+  body:has(#view-receipt.active-view) { background:#fff; padding-bottom:0; }
+  body:has(#view-receipt.active-view) header, body:has(#view-receipt.active-view) nav, body:has(#view-receipt.active-view) .receipt-toolbar, body:has(#view-receipt.active-view) .receipt-editor, body:has(#view-receipt.active-view) .sidebar-overlay, body:has(#view-receipt.active-view) #toast-container { display:none !important; }
+  body:has(#view-receipt.active-view) main { display:none !important; }
+  body:has(#view-receipt.active-view) #view-receipt { display:flex !important; height:auto; overflow:visible; }
+  body:has(#view-receipt.active-view) .receipt-workspace { display:block; }
+  body:has(#view-receipt.active-view) .receipt-preview-panel { display:block; padding:0; background:#fff; overflow:visible; }
+  body:has(#view-receipt.active-view) .receipt-paper { box-shadow:none; margin:0; width:210mm; height:148mm; min-width:210mm; }
+}
+@media (max-width:900px) {
+  .receipt-page-view { height:calc(100vh - 115px); }
+  .receipt-workspace { flex-direction:column; overflow:auto; }
+  .receipt-editor { width:100%; height:48%; border-right:0; border-bottom:1px solid var(--border); }
+  .receipt-preview-panel { min-height:52%; padding:1rem; align-items:flex-start; }
+  .receipt-paper { transform-origin:top center; }
+}
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="header-actions">
+            <button class="btn-hamburger" onclick="toggleMenu()">☰</button>
+        </div>
+        <h1>Patient Register</h1>
+        <p class="subtitle">Billing & Session Records</p>
+    </div>
+</header>
+
+<!-- HAMBURGER SIDEBAR MENU -->
+<div class="sidebar-overlay" id="hamburger-overlay">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3 style="margin:0">Menu</h3>
+            <button class="sidebar-close" onclick="toggleMenu()">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <!-- Navigation -->
+            <div class="menu-section">
+                <h4>Pages</h4>
+                <button class="sidebar-link active" id="link-dashboard" onclick="switchView('dashboard'); toggleMenu()">Dashboard</button>
+                <button class="sidebar-link" id="link-patients" onclick="switchView('patients'); toggleMenu()">Patients</button>
+                <button class="sidebar-link" id="link-sessions" onclick="switchView('sessions'); toggleMenu()">Sessions</button>
+                <button class="sidebar-link" id="link-income" onclick="switchView('income'); toggleMenu()">Income</button>
+                <button class="sidebar-link" id="link-receipt" onclick="switchView('receipt'); toggleMenu()">Create Receipt</button>
+                <button class="sidebar-link" id="link-receipts" onclick="switchView('receipts'); toggleMenu()">Receipts</button>
+            </div>
+
+            <div style="border-top:1px solid #eee;"></div>
+
+            <!-- Data Management -->
+            <div class="menu-section">
+                <h4>Export / Import</h4>
+                <button class="sidebar-link" onclick="exportAllData(); toggleMenu()">⬇ Export All Data (CSV)</button>
+                <button class="sidebar-link" onclick="exportData('json'); toggleMenu()">⬇ Backup (JSON)</button>
+                <button class="sidebar-link" onclick="document.getElementById('import-json-file').click(); toggleMenu()">⬆ Restore (JSON)</button>
+                <button class="sidebar-link" onclick="document.getElementById('import-csv-file').click(); toggleMenu()">⬆ Import CSV</button>
+            </div>
+
+            <div class="menu-section">
+                <h4>Danger Zone</h4>
+                <button class="sidebar-link danger" onclick="resetApp(); toggleMenu()">Reset All Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIEW 1: DASHBOARD -->
+<main id="view-dashboard" class="active-view">
+    
+    <!-- Global Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="dash-total-patients">0</div>
+            <div class="stat-label">Patients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="dash-total-sessions">0</div>
+            <div class="stat-label">Total Sessions</div>
+        </div>
+    </div>
+
+    <!-- Interactive Dashboard Split -->
+    <div class="dashboard-split">
+        
+        <!-- Left: Patient Selector -->
+        <div class="card patient-selector-card">
+            <div class="section-header">
+                <h2>Focus Patient</h2>
+            </div>
+            <div class="form-group">
+                <label>Select a patient to view details</label>
+                <select id="dash-patient-select" class="form-control" onchange="loadDashboardPatient()">
+                    <option value="">-- Select Patient --</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+            
+            <div class="card" style="background: #f8f9fa; border:none; box-shadow:none; margin-top:1rem; text-align:center;">
+                <p style="font-size:0.8rem; color:var(--secondary);">
+                    Access data management tools via top-left menu.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right: Patient Details (Initially Hidden) -->
+        <div id="patient-focus-area" style="display:none;">
+            
+            <!-- Patient Info Card -->
+            <div class="card">
+                <div class="section-header">
+                    <h2>Patient Details</h2>
+                    <div>
+                        <button class="btn btn-sm btn-warning" onclick="syncPatientData()" title="Links income records to sessions based on dates">⚡ Sync Data</button>
+                        <button class="btn btn-sm btn-secondary" onclick="copyUnbilledText()">📋 Copy Unbilled List</button>
+                        <button class="btn btn-sm btn-outline" onclick="closePatientFocus()">Close</button>
+                    </div>
+                </div>
+                <div id="patient-profile-details" style="font-size: 0.9rem;">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Sessions & Income Tabs -->
+            <div class="card">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchDashTab('sessions')">Sessions</div>
+                    <div class="tab" onclick="switchDashTab('income')">Income</div>
+                </div>
+
+                <!-- Tab 1: Sessions -->
+                <div id="tab-sessions" class="tab-content active">
+                    <div class="section-header">
+                        <h3>All Sessions</h3>
+                        <button class="btn btn-sm btn-primary" onclick="quickLogSession(document.getElementById('dash-patient-select').value)">+ Log Session</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="dash-sessions-table">
+                            <thead><tr><th>Date</th><th>Type</th><th>Treatment</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section-header" style="margin-top:2rem; border-top:1px solid #eee; padding-top:1rem;">
+                        <h3>Unbilled Sessions</h3>
+                        <button class="btn btn-sm btn-outline" id="btn-create-invoice" onclick="openInvoiceModal()" disabled>📄 Create Invoice</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="dash-unbilled-table">
+                            <thead><tr><th>Date</th><th>Type</th><th>Treatment</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Income -->
+                <div id="tab-income" class="tab-content">
+                    <div class="section-header">
+                        <h3>Income History</h3>
+                        <button class="btn btn-sm btn-primary" onclick="openIncomeModalForDash()">+ Add Income</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="dash-income-table">
+                            <thead>
+                                <tr>
+                                    <th>Serial No</th>
+                                    <th>Date</th>
+                                    <th>Receipt</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Mode</th>
+                                    <th>Status</th>
+                                    <th>Service Dates</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholder when no patient selected -->
+    <div id="no-patient-msg" class="card" style="text-align:center; padding: 2rem; color:var(--secondary);">
+        Please select a patient from left menu to view their records.
+    </div>
+
+</main>
+
+<!-- VIEW 2: PATIENTS -->
+<main id="view-patients">
+    <div class="card">
+        <div class="section-header">
+            <h2>Patient Directory</h2>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="exportFilteredPatients()">⬇ Export Filtered</button>
+                <button class="btn btn-primary" onclick="openPatientModal()">+ New Patient</button>
+            </div>
+        </div>
+        
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" id="search-patient" class="form-control" placeholder="Name or Case No..." onkeyup="renderPatients()">
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="filter-patient-status" class="form-control" onchange="renderPatients()">
+                    <option value="All">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Gender</label>
+                <select id="filter-patient-gender" class="form-control" onchange="renderPatients()">
+                    <option value="All">All</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Start Date From</label>
+                <input type="date" id="filter-patient-start" class="form-control" onchange="renderPatients()">
+            </div>
+            <div class="filter-group">
+                <label>Start Date To</label>
+                <input type="date" id="filter-patient-end" class="form-control" onchange="renderPatients()">
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="patients-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('patients-table', 0)">Case No</th>
+                        <th onclick="sortTable('patients-table', 1)">Patient Name</th>
+                        <th onclick="sortTable('patients-table', 2)">Age</th>
+                        <th onclick="sortTable('patients-table', 3)">Gender</th>
+                        <th onclick="sortTable('patients-table', 4)">Condition</th>
+                        <th>History</th>
+                        <th onclick="sortTable('patients-table', 5)">Referred By</th>
+                        <th onclick="sortTable('patients-table', 6)">Start Date</th>
+                        <th onclick="sortTable('patients-table', 7)">Status</th>
+                        <th>Session Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- Pagination injected here via JS -->
+    </div>
+</main>
+
+<!-- VIEW 3: SESSIONS -->
+<main id="view-sessions">
+    <div class="card">
+        <div class="section-header">
+            <h2>Session Log</h2>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="exportFilteredSessions()">⬇ Export Filtered</button>
+                <button class="btn btn-primary" onclick="openSessionModal()">+ Add Session</button>
+            </div>
+        </div>
+
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Patient Search</label>
+                <input type="text" id="search-session-patient" class="form-control" placeholder="Name..." onkeyup="renderSessions()">
+            </div>
+            <div class="filter-group">
+                <label>Type</label>
+                <select id="filter-session-type" class="form-control" onchange="renderSessions()">
+                    <option value="All">All Types</option>
+                    <option value="Direct">Direct</option>
+                    <option value="Hospital">Hospital</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Start Date</label>
+                <input type="date" id="filter-session-start" class="form-control" onchange="renderSessions()">
+            </div>
+            <div class="filter-group">
+                <label>End Date</label>
+                <input type="date" id="filter-session-end" class="form-control" onchange="renderSessions()">
+            </div>
+            <div class="filter-group">
+                <label>Year</label>
+                <select id="filter-session-year" class="form-control" onchange="renderSessions()">
+                    <option value="All">All Years</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="sessions-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('sessions-table', 0)">Date</th>
+                        <th onclick="sortTable('sessions-table', 1)">Type</th>
+                        <th onclick="sortTable('sessions-table', 2)">Patient</th>
+                        <th onclick="sortTable('sessions-table', 3)">Treatment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- Pagination injected here via JS -->
+    </div>
+</main>
+
+<!-- VIEW 4: INCOME -->
+<main id="view-income">
+    <div class="card">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="view-income-total">₹0</div>
+                <div class="stat-label">Total Income</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="view-income-pending" style="color:var(--warning)">₹0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card" style="border: 1px solid #ced4da;">
+                <div class="stat-value" id="view-income-hospital-money" style="color:#6c757d">₹0</div>
+                <div class="stat-label">Hospital Money</div>
+            </div>
+            <div class="stat-card" style="border: 1px solid #ced4da;">
+                <div class="stat-value" id="view-income-hospital-sessions" style="color:#6c757d">0</div>
+                <div class="stat-label">Hospital Sessions</div>
+            </div>
+        </div>
+
+        <div class="section-header" style="margin-top: 1rem;">
+            <h2>Financial Records</h2>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="exportFilteredIncome()">⬇ Export Filtered</button>
+                <button class="btn btn-primary" onclick="openIncomeModal()">+ Add Income</button>
+            </div>
+        </div>
+
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" id="search-income" class="form-control" placeholder="Patient/Serial/Receipt..." onkeyup="renderIncome()">
+            </div>
+            <div class="filter-group">
+                <label>Type</label>
+                <select id="filter-income-type" class="form-control" onchange="renderIncome()">
+                    <option value="All">All Types</option>
+                    <option value="Direct">Direct</option>
+                    <option value="Hospital">Hospital</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="filter-income-status" class="form-control" onchange="renderIncome()">
+                    <option value="All">All</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+            
+            <!-- Financial Year Filter -->
+            <div class="filter-group">
+                <label>Fin. Year (Apr-Mar)</label>
+                <select id="filter-income-fy" class="form-control" onchange="renderIncome()">
+                    <option value="All">All Years</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Month</label>
+                <select id="filter-income-month" class="form-control" onchange="renderIncome()">
+                    <option value="All">All Months</option>
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Year</label>
+                <select id="filter-income-year" class="form-control" onchange="renderIncome()">
+                    <option value="All">All Years</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="income-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('income-table', 0)">Serial No</th>
+                        <th onclick="sortTable('income-table', 1)">Date</th>
+                        <th onclick="sortTable('income-table', 2)">Receipt</th>
+                        <th onclick="sortTable('income-table', 3)">Type</th>
+                        <th onclick="sortTable('income-table', 4)">Patient</th>
+                        <th onclick="sortTable('income-table', 5)">Amount</th>
+                        <th onclick="sortTable('income-table', 6)">Status</th>
+                        <th onclick="sortTable('income-table', 7)">Mode</th>
+                        <th>Service Dates</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- Pagination injected here via JS -->
+    </div>
+</main>
+
+
+<!-- VIEW 5: RECEIPT BUILDER -->
+<main id="view-receipt" class="receipt-page-view">
+    <div class="receipt-toolbar">
+        <div>
+            <h2>Receipt Builder</h2>
+            <span>Create, save and print physiotherapy receipts.</span>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline" onclick="receiptOpenTherapistModal()">Manage Physiotherapists</button>
+            <button class="btn btn-outline" onclick="receiptNew()">New Receipt</button>
+            <button class="btn btn-primary" onclick="receiptPrint()">Print Receipt</button>
+        </div>
+    </div>
+    <div class="receipt-workspace">
+        <aside class="receipt-editor">
+            <div class="receipt-scroll">
+                <div class="section-header"><h2>Physiotherapist</h2><button class="btn btn-sm btn-primary" onclick="receiptOpenTherapistModal()">+ Add</button></div>
+                <div class="form-group">
+                    <select id="r-therapist" class="form-control" onchange="receiptLoadTherapist(this.value)">
+                        <option value="">-- Select Physiotherapist --</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <div class="form-group"><label>Name</label><input id="r-doc-name" class="form-control" maxlength="100" oninput="receiptUpdate()" placeholder="Dr. Name"></div>
+                    <div class="form-group"><label>Qualification</label><input id="r-doc-qual" class="form-control" maxlength="100" oninput="receiptUpdate()" placeholder="BPT (Physiotherapy)"></div>
+                    <div class="form-group"><label>Registration No.</label><input id="r-doc-reg" class="form-control" maxlength="50" oninput="receiptUpdate()" placeholder="Reg No: 12345"></div>
+                </div>
+
+                <div class="section-header"><h2>Patient</h2><button class="btn btn-sm btn-primary" onclick="openPatientModal()">+ Add</button></div>
+                <div class="form-group">
+                    <select id="r-patient" class="form-control" onchange="receiptLoadPatient(this.value)">
+                        <option value="">-- Select Patient --</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <div class="form-group"><label>Name</label><input id="r-pat-name" class="form-control" maxlength="100" oninput="receiptUpdate()" placeholder="Mr. John Doe"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Age</label><input id="r-age" type="number" class="form-control" min="0" max="150" oninput="receiptUpdate()"></div>
+                        <div class="form-group"><label>Sex</label><select id="r-sex" class="form-control" onchange="receiptUpdate()"><option>Male</option><option>Female</option><option>Other</option></select></div>
+                    </div>
+                    <div class="form-group"><label>Mobile</label><input id="r-mobile" class="form-control" maxlength="15" oninput="receiptUpdate()" placeholder="9876543210"></div>
+                    <div class="form-group"><label>Address</label><input id="r-address" class="form-control" maxlength="200" oninput="receiptUpdate()"></div>
+                </div>
+
+                <div class="section-header"><h2>Billing</h2></div>
+                <div class="card">
+                    <div class="form-row">
+                        <div class="form-group"><label>Bill / Receipt No.</label><input id="r-bill-no" class="form-control" readonly></div>
+                        <div class="form-group"><label>Date</label><input id="r-date" type="date" class="form-control" onchange="receiptUpdate()"></div>
+                    </div>
+                    <div class="form-group"><label>Services (Name | Units | Amount)</label><textarea id="r-services" class="form-control" rows="4" maxlength="1000" oninput="receiptUpdateServices()" placeholder="Consultation | 1 | 500"></textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Amount (₹)</label><input id="r-amount" type="number" class="form-control" min="0" max="99999999" oninput="receiptUpdate()"></div>
+                        <div class="form-group"><label>Mode</label><select id="r-mode" class="form-control" onchange="receiptUpdate()"><option>Cash</option><option>Card</option><option>UPI</option><option>Online Transfer</option></select></div>
+                    </div>
+                    <div class="form-group"><label>Transaction ID</label><input id="r-trans-id" class="form-control" maxlength="50" placeholder="UTR / Ref No"></div>
+                    <div class="form-group"><label>Custom Text / Diagnosis / Notes</label><textarea id="r-custom" class="form-control" rows="3" maxlength="500" oninput="receiptUpdate()"></textarea></div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="receiptSave()">Save Receipt</button>
+                        <button class="btn btn-outline" onclick="receiptNew()">New</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <section class="receipt-preview-panel">
+            <div id="receipt-paper" class="receipt-paper">
+                <div class="receipt-header-r">
+                    <div class="receipt-doc-left"><div id="ro-doc-name" class="receipt-doc-name">Dr. Name</div><div id="ro-doc-qual" class="receipt-doc-qual">Qualification</div><div id="ro-doc-reg" class="receipt-doc-reg">Registration No.</div></div>
+                    <div class="receipt-title-r">RECEIPT</div>
+                </div>
+                <div class="receipt-divider-r"></div>
+                <div class="receipt-body-r">
+                    <div class="receipt-patient-row">
+                        <div><b>Patient name : </b><span id="ro-pat-name">-</span><br><b>Patient Address : </b><span id="ro-address">-</span></div>
+                        <div class="receipt-right"><div><b>Age/sex : </b><span id="ro-age-sex">-</span></div><div class="receipt-mobile"><b>Mobile No: </b><span id="ro-mobile">-</span></div></div>
+                    </div>
+                    <div class="receipt-middle-r">
+                        <div class="receipt-bill-row"><div><b>Bill/Receipt No: </b><span id="ro-bill-no">-</span></div><div><b>Date: </b><span id="ro-date">-</span></div></div>
+                        <table class="receipt-service-table"><thead><tr><th>Particulars</th><th>Units</th><th>Amount</th></tr></thead><tbody id="ro-services"></tbody></table>
+                        <div id="ro-custom" class="receipt-custom-r"></div>
+                    </div>
+                </div>
+                <div class="receipt-footer-r">
+                    <div class="receipt-footer-left"><div><div>Mode: <span id="ro-mode">Cash</span></div><div class="receipt-amount-box">Rs. <span id="ro-amount">0</span>/-</div></div><div class="receipt-sum">Sum of Rupees <span id="ro-words">Zero Only</span> received with thanks from <span id="ro-footer-name">Patient Name</span></div></div>
+                    <div class="receipt-sign"><div class="receipt-sign-line"></div><div id="ro-footer-doc" class="receipt-footer-doc">For Dr. Name</div></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- VIEW 6: RECEIPT HISTORY -->
+<main id="view-receipts">
+    <div class="card">
+        <div class="section-header"><h2>Saved Receipts</h2><div class="btn-group"><button class="btn btn-success" onclick="receiptExportCSV()">Export CSV</button><button class="btn btn-primary" onclick="switchView('receipt')">+ Create Receipt</button></div></div>
+        <div class="filter-panel"><div class="filter-group"><label>Search</label><input id="receipt-history-search" class="form-control" placeholder="Bill No, patient, transaction..." oninput="receiptRenderHistory()"></div><div class="filter-group"><label>Month</label><select id="receipt-history-month" class="form-control" onchange="receiptRenderHistory()"><option value="All">All Months</option><option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option></select></div></div>
+        <div class="table-wrapper"><table id="receipt-history-table"><thead><tr><th>Bill No</th><th>Date</th><th>Patient</th><th>Physiotherapist</th><th>Amount</th><th>Mode</th><th>Transaction ID</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+</main>
+
+<!-- NAV BAR -->
+<nav>
+    <button class="nav-btn active" onclick="switchView('dashboard', this)">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+    </button>
+    <button class="nav-btn" onclick="switchView('patients', this)">
+    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"> <path fill-rule="evenodd" d="M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm-1.5 8a4 4 0 0 0-4 4 2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-3Zm6.82-3.096a5.51 5.51 0 0 0-2.797-6.293 3.5 3.5 0 1 1 2.796 6.292ZM19.5 18h.5a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-1.1a5.503 5.503 0 0 1-.471.762A5.998 5.998 0 0 1 19.5 18ZM4 7.5a3.5 3.5 0 0 1 5.477-2.889 5.5 5.5 0 0 0-2.796 6.293A3.501 3.501 0 0 1 4 7.5ZM7.1 12H6a4 4 0 0 0-4 4 2 2 0 0 0 2 2h.5a5.998 5.998 0 0 1 3.071-5.238A5.505 5.505 0 0 1 7.1 12Z" clip-rule="evenodd"/> </svg>
+        Patients
+    </button>
+    <button class="nav-btn" onclick="switchView('sessions', this)">
+        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+        Sessions
+    </button>
+    <button class="nav-btn" onclick="switchView('income', this)">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        Income
+    </button>
+    <button class="nav-btn" onclick="switchView('receipt', this)">
+        <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17H6V2zm2 2v16h8V6h-2V4H8zm1 4h6v2H9V8zm0 4h6v2H9v-2z"/></svg>
+        Receipt
+    </button>
+    <button class="nav-btn" onclick="switchView('receipts', this)">
+        <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17H6V2zm2 2v16h8V6h-2V4H8zm1 5h6v2H9V9zm0 4h6v2H9v-2z"/></svg>
+        Receipts
+    </button>
+</nav>
+
+<!-- HIDDEN INPUTS FOR IMPORT -->
+<input type="file" id="import-csv-file" style="display:none" accept=".csv" onchange="importCSV(this)">
+<input type="file" id="import-json-file" style="display:none" accept=".json" onchange="importJSON(this)">
+
+<!-- MODALS -->
+
+<!-- Patient Modal -->
+<div class="modal-overlay" id="modal-patient">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modal-patient-title">Add New Patient</span>
+            <span style="cursor:pointer; font-size:1.2rem" onclick="closeModal('modal-patient')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="form-patient">
+                <input type="hidden" id="p-id">
+                <div class="form-group">
+                    <label>Patient Name *</label>
+                    <input type="text" class="form-control" id="p-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Case No (e.g. h001) *</label>
+                        <input type="text" class="form-control" id="p-caseNo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" class="form-control" id="p-age">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select class="form-control" id="p-gender">
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <input type="text" class="form-control" id="p-condition">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" class="form-control" id="p-startDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control" id="p-status">
+                            <option value="Active">Active</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mobile</label>
+                        <input type="text" class="form-control" id="p-mobile" maxlength="15" placeholder="9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" class="form-control" id="p-address" maxlength="200" placeholder="Address">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Referred By</label>
+                    <input type="text" class="form-control" id="p-referredBy" placeholder="Dr. Name or Source">
+                </div>
+                <div class="form-group">
+                    <label>History / Notes</label>
+                    <textarea class="form-control" id="p-history" rows="2" placeholder="Past medical history..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-patient')">Cancel</button>
+            <button class="btn btn-primary" onclick="savePatient()">Save Patient</button>
+        </div>
+    </div>
+</div>
+
+<!-- Unbilled Text Copy Modal -->
+<div class="modal-overlay" id="modal-unbilled">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Unbilled Sessions</span>
+            <span style="cursor:pointer; font-size:1.2rem" onclick="closeModal('modal-unbilled')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Message for WhatsApp</label>
+                <textarea id="copy-text-area" class="copy-text-area" readonly></textarea>
+            </div>
+            <p style="font-size:0.8rem; color:var(--secondary); margin-top:-5px;">Select text above and manually copy if button fails.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-unbilled')">Close</button>
+            <button class="btn btn-primary" onclick="copyFromModal()">Copy to Clipboard</button>
+        </div>
+    </div>
+</div>
+
+<!-- Session Modal -->
+<div class="modal-overlay" id="modal-session">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modal-session-title">Add Session Log</span>
+            <span style="cursor:pointer; font-size:1.2rem" onclick="closeModal('modal-session')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="form-session">
+                <input type="hidden" id="s-id">
+                <div class="form-group">
+                    <label>Patient *</label>
+                    <select class="form-control" id="s-patientId" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" class="form-control" id="s-date" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payment Type</label>
+                        <select class="form-control" id="s-type">
+                            <option value="Direct">Direct</option>
+                            <option value="Hospital">Hospital</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Treatment</label>
+                    <textarea class="form-control" id="s-treatment" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea class="form-control" id="s-notes" rows="2"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-session')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+        </div>
+    </div>
+</div>
+
+<!-- Income Modal -->
+<div class="modal-overlay" id="modal-income">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modal-income-title">Add Income Entry</span>
+            <span style="cursor:pointer; font-size:1.2rem" onclick="closeModal('modal-income')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="form-income">
+                <input type="hidden" id="i-id">
+                <div class="form-group">
+                    <label>Patient *</label>
+                    <select class="form-control" id="i-patientId" required onchange="loadSessionsForBilling()">
+                        <option value="">Select Patient</option>
+                    </select>
+                </div>
+                
+                <!-- Connect Sessions to Income Feature -->
+                <div id="session-connector-area" class="form-group" style="display:none;">
+                    <label>Select Sessions to Bill (Auto-fills Units & Service Dates)</label>
+                    <div id="billing-session-list" class="session-selector-box">
+                        <!-- Sessions populated by JS -->
+                    </div>
+                </div>
+
+                <div class="form-row">
+                     <div class="form-group">
+                        <label>Serial No (Auto-Generated)</label>
+                        <input type="text" class="form-control" id="i-serialNo" readonly style="background:#e9ecef">
+                    </div>
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" class="form-control" id="i-date" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payment Type</label>
+                        <select class="form-control" id="i-type">
+                            <option value="Direct">Direct</option>
+                            <option value="Hospital">Hospital</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label>Receipt No (Optional)</label>
+                        <input type="text" class="form-control" id="i-receiptNo" placeholder="Leave empty if not applicable">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Amount (₹) *</label>
+                        <input type="number" class="form-control" id="i-amount" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Units</label>
+                        <input type="number" class="form-control" id="i-units" placeholder="Auto-filled" readonly style="background:#e9ecef">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control" id="i-status">
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mode</label>
+                        <select class="form-control" id="i-mode">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                            <option value="NEFT">NEFT</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Service Dates (Note)</label>
+                    <textarea class="form-control" id="i-note" rows="2" placeholder="Select sessions above to auto-fill this..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-income')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveIncome()">Save Income</button>
+        </div>
+    </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay" id="modal-invoice">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Create Invoice</span>
+            <span style="cursor:pointer; font-size:1.2rem" onclick="closeModal('modal-invoice')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Invoice Serial</label>
+                    <input type="text" class="form-control" id="inv-serial" readonly style="background:#e9ecef">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Patient</label>
+                <input type="text" class="form-control" id="inv-patient-name" readonly style="background:#f1f1f1">
+                <input type="hidden" id="inv-patient-id">
+            </div>
+            
+            <div class="form-group">
+                <label>Unbilled Sessions to Include</label>
+                <div id="invoice-session-list" class="session-selector-box" style="max-height: 200px;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Invoice Date</label>
+                    <input type="date" class="form-control" id="inv-date" value="">
+                </div>
+                <div class="form-group">
+                    <label>Total Amount (₹)</label>
+                    <input type="number" class="form-control" id="inv-amount" placeholder="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Message (Optional)</label>
+                <textarea class="form-control" id="inv-message" rows="2" placeholder="E.g. Payment pending for..."></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-invoice')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveInvoice()">Save & Generate Invoice</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Combined Receipt Builder: Therapist Modal -->
+<div class="modal-overlay" id="modal-therapist-combined">
+  <div class="modal">
+    <div class="modal-header"><span id="r-therapist-modal-title">Add Physiotherapist</span><span style="cursor:pointer;font-size:1.2rem" onclick="closeModal('modal-therapist-combined')">&times;</span></div>
+    <div class="modal-body">
+      <input type="hidden" id="r-therapist-id">
+      <div class="form-group"><label>Full Name *</label><input id="r-new-doc-name" class="form-control" maxlength="100"></div>
+      <div class="form-group"><label>Qualification</label><input id="r-new-doc-qual" class="form-control" maxlength="100"></div>
+      <div class="form-group"><label>Registration No.</label><input id="r-new-doc-reg" class="form-control" maxlength="50"></div>
+      <div class="table-wrapper" style="margin-top:1rem"><table id="r-therapist-table"><thead><tr><th>Name</th><th>Qualification</th><th>Reg No</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-therapist-combined')">Close</button><button class="btn btn-primary" onclick="receiptSaveTherapist()">Save Physiotherapist</button></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+    /* 
+     * DATA & STATE MANAGEMENT 
+     */
+    const STORAGE_KEY = 'clinic_manager_db_v16'; // Version bump
+    let db = { patients: [], sessions: [], income: [], receipts: [], therapists: [] };
+    let currentDashPatientId = null;
+    let currentInvoicePatientId = null;
+
+    // Pagination State
+    const ITEMS_PER_PAGE = 50;
+    let pPatientsPage = 1;
+    let pSessionsPage = 1;
+    let pIncomePage = 1;
+
+    function initDB() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Migration logic for older versions using 'visits'
+            if (parsed.visits && !parsed.sessions) {
+                db.sessions = parsed.visits;
+                db.patients = parsed.patients || [];
+                db.income = parsed.income || [];
+                // Clean up old key
+                saveDB(); 
+            } else {
+                db = parsed;
+            }
+        }
+        
+        // Combined Receipt Builder stores
+        db.patients = Array.isArray(db.patients) ? db.patients : [];
+        db.sessions = Array.isArray(db.sessions) ? db.sessions : [];
+        db.income = Array.isArray(db.income) ? db.income : [];
+        db.receipts = Array.isArray(db.receipts) ? db.receipts : [];
+        db.therapists = Array.isArray(db.therapists) ? db.therapists : [];
+
+        // SEED DEMO DATA (Only if completely empty)
+        if (db.patients.length === 0) {
+            console.log("Seeding Demo Data...");
+            const pId = generateId();
+            const p = {
+                id: pId, 
+                name: 'Demo Patient', 
+                age: 45, 
+                gender: 'M', 
+                caseNo: 'd001', 
+                condition: 'Back Pain', 
+                status: 'Active', 
+                referredBy: 'Self', 
+                history: 'Test patient for functionality.', 
+                startDate: ''
+            };
+            db.patients.push(p);
+
+            // 3 Sessions (Mixed types for demo)
+            db.sessions.push({ id: generateId(), patientId: p.id, date: '2025-01-01', treatment: 'Initial Checkup', notes: 'First Session', type: 'Hospital' });
+            db.sessions.push({ id: generateId(), patientId: p.id, date: '2025-01-05', treatment: 'Follow up', notes: 'Pain reduced', type: 'Direct' });
+            db.sessions.push({ id: generateId(), patientId: p.id, date: '2025-01-10', treatment: 'Discharge', notes: 'Fully Recovered', type: 'Direct' });
+
+            // 1 Old Income (Fully Paid, Direct)
+            db.income.push({ 
+                id: generateId(), 
+                patientId: p.id, 
+                date: '2024-12-01', 
+                amount: 1500, 
+                units: 3, 
+                serialNo: 'INV-OLD', 
+                receiptNo: 'R99', 
+                status: 'Completed', 
+                mode: 'Cash', 
+                note: '01 Jan 2025, 05 Jan 2025, 10 Jan 2025', 
+                type: 'Direct',
+                sessionIds: [] 
+            });
+            
+            // Force Save
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        }
+
+        renderAll();
+    }
+
+    function saveDB() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        } catch (e) {
+            console.error(e);
+            showToast('Storage Full! Cannot save. Export data to clear space.', 'error');
+        }
+        renderAll();
+    }
+
+    function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+    function getPatient(id) { return db.patients.find(p => p.id === id); }
+    function getPatientByCaseNo(caseNo) { return db.patients.find(p => p.caseNo.toLowerCase() === caseNo.toLowerCase()); }
+
+    /* 
+     * UI UTILS 
+     */
+    function showToast(msg, type='success') {
+        const container = document.getElementById('toast-container');
+        const existing = container.querySelector(`.toast.${type}`);
+        if (existing && type === 'info') {
+            existing.querySelector('span').innerText = msg;
+            return;
+        } else if (existing) {
+            existing.remove();
+        }
+
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<span>${msg}</span> <span style="cursor:pointer; margin-left:10px;" onclick="this.parentElement.remove()">&times;</span>`;
+        container.appendChild(el);
+        setTimeout(() => {
+             if(el.classList.contains('success') || el.classList.contains('error')) el.remove();
+        }, 3000);
+    }
+
+    function formatCurrency(num) { return '₹ ' + parseFloat(num || 0).toLocaleString('en-IN'); }
+
+    function switchView(viewName, btn) {
+        document.querySelectorAll('main').forEach(e => e.classList.remove('active-view'));
+        const target = document.getElementById(`view-${viewName}`);
+        if(!target) return;
+        target.classList.add('active-view');
+        if(viewName === 'receipt') { receiptPopulatePatients(); receiptPopulateTherapists(); receiptUpdate(); receiptUpdateServices(); }
+        if(viewName === 'receipts') { receiptRenderHistory(); }
+        document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(e => e.classList.remove('active'));
+        
+        if(btn) btn.classList.add('active');
+        
+        // Update sidebar active state
+        const sidebarLink = document.getElementById(`link-${viewName}`);
+        if(sidebarLink) sidebarLink.classList.add('active');
+    }
+
+    /* 
+     * HAMBURGER MENU LOGIC 
+     */
+    function toggleMenu() {
+        const overlay = document.getElementById('hamburger-overlay');
+        if (overlay.style.display === 'block') {
+            overlay.style.display = 'none';
+        } else {
+            overlay.style.display = 'block';
+        }
+    }
+
+    // Close sidebar if clicking outside
+    document.getElementById('hamburger-overlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            toggleMenu();
+        }
+    });
+
+    /* 
+     * DATE FORMATTING LOGIC 
+     */
+    function formatDateForDisplay(dateStr) {
+        if(!dateStr) return '-';
+        const parts = dateStr.split('-');
+        if(parts.length === 3 && parts[0].length === 4) {
+            const [y, m, d] = parts;
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const monthName = months[parseInt(m)-1];
+            return `${d} ${monthName} ${y}`;
+        }
+        return dateStr;
+    }
+
+    function generateSerial() {
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0,10).replace(/-/g, ''); // YYYYMMDD
+        const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `INV-${dateStr}-${rand}`;
+    }
+
+    /* 
+     * FINANCIAL YEAR LOGIC 
+     */
+    function getFinancialYear(dateStr) {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        const year = d.getFullYear();
+        const month = d.getMonth(); // 0-11
+        
+        if (month >= 3) { // April (3) onwards
+            return `${year}-${(year + 1).toString().substr(-2)}`;
+        } else { // Jan, Feb, Mar belong to previous year
+            return `${year - 1}-${year.toString().substr(-2)}`;
+        }
+    }
+
+    function populateFinancialYearFilter() {
+        const fys = new Set();
+        db.income.forEach(i => {
+            const fy = getFinancialYear(i.date);
+            if(fy) fys.add(fy);
+        });
+        
+        const sortedFys = Array.from(fys).sort().reverse();
+        
+        let html = `<option value="All">All Years</option>`;
+        sortedFys.forEach(fy => {
+            html += `<option value="${fy}">${fy}</option>`;
+        });
+        document.getElementById('filter-income-fy').innerHTML = html;
+    }
+
+    /* 
+     * SYNC / RECALCULATE LOGIC
+     */
+    function syncPatientData() {
+        if (!currentDashPatientId) return;
+        
+        showToast("Scanning data to sync sessions...", "info");
+
+        const alreadyLinkedIds = new Set();
+        db.income
+            .filter(i => i.patientId === currentDashPatientId)
+            .forEach(i => {
+                if (i.sessionIds && i.sessionIds.length > 0) {
+                    i.sessionIds.forEach(sid => alreadyLinkedIds.add(sid));
+                }
+            });
+
+        const incomeToFix = db.income.filter(i => 
+            i.patientId === currentDashPatientId && 
+            (!i.sessionIds || i.sessionIds.length === 0)
+        );
+
+        let syncedCount = 0;
+
+        incomeToFix.forEach(inc => {
+            if (!inc.note) return;
+
+            const dateTokens = inc.note.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            
+            if (dateTokens.length === 0) return;
+
+            const foundSessionIds = [];
+
+            dateTokens.forEach(dateStr => {
+                const session = db.sessions.find(s => 
+                    s.patientId === currentDashPatientId &&
+                    !alreadyLinkedIds.has(s.id) &&
+                    formatDateForDisplay(s.date) === dateStr
+                );
+
+                if (session) {
+                    foundSessionIds.push(session.id);
+                    alreadyLinkedIds.add(session.id);
+                }
+            });
+
+            if (foundSessionIds.length > 0) {
+                inc.sessionIds = foundSessionIds;
+                inc.units = foundSessionIds.length; 
+                syncedCount++;
+            }
+        });
+
+        if (syncedCount > 0) {
+            saveDB();
+            loadDashboardPatient();
+            showToast(`Successfully synced ${syncedCount} income records!`, "success");
+        } else {
+            showToast("No new links found. Data might already be synced.", "info");
+        }
+    }
+
+    /* 
+     * COPY UNBILLED TEXT LOGIC 
+     */
+    function copyUnbilledText() {
+        const p = getPatient(currentDashPatientId);
+        if(!p) return;
+
+        const allSessions = db.sessions.filter(s => s.patientId === currentDashPatientId);
+        const billedSessionIds = new Set();
+        db.income.filter(i => i.patientId === currentDashPatientId).forEach(i => {
+            if (i.sessionIds && i.sessionIds.length > 0) {
+                i.sessionIds.forEach(sid => billedSessionIds.add(sid));
+            }
+        });
+        
+        let unbilled = allSessions.filter(s => !billedSessionIds.has(s.id));
+
+        if(unbilled.length === 0) {
+            showToast("No unbilled sessions found.", "info");
+            return;
+        }
+
+        // SORTING FIX: Sort by date ascending (Oldest to Newest)
+        unbilled.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        let honorific = '';
+        if (p.gender === 'M') {
+            honorific = 'Mr. ';
+        } else if (p.gender === 'F') {
+            honorific = 'Mrs. ';
+        }
+
+        let text = `Patient Name: ${honorific}${p.name}\n`;
+        text += `Unbilled Sessions: ${unbilled.length}\n`;
+        text += `--------------------------\n`;
+        text += `Dates:\n`;
+        
+        unbilled.forEach((s, index) => {
+            text += `${index + 1}. ${formatDateForDisplay(s.date)}\n`;
+        });
+
+        text += `--------------------------\n`;
+        text += `Please arrange payment for the above.`;
+
+        document.getElementById('copy-text-area').value = text;
+        openModal('modal-unbilled');
+    }
+
+    function copyFromModal() {
+        const copyText = document.getElementById("copy-text-area");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            showToast("Copied to clipboard!");
+        }, (err) => {
+            showToast("Failed to copy. Please select and copy manually.", 'error');
+        });
+    }
+
+    /* 
+     * DASHBOARD INTERACTIVE LOGIC 
+     */
+    function loadDashboardPatient() {
+        const select = document.getElementById('dash-patient-select');
+        const patientId = select.value;
+        currentDashPatientId = patientId;
+
+        if(!patientId) {
+            document.getElementById('patient-focus-area').style.display = 'none';
+            document.getElementById('no-patient-msg').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('patient-focus-area').style.display = 'block';
+        document.getElementById('no-patient-msg').style.display = 'none';
+
+        const p = getPatient(patientId);
+        if(!p) return;
+
+        const details = document.getElementById('patient-profile-details');
+        details.innerHTML = `
+            <p><strong>Name:</strong> ${p.name}</p>
+            <p><strong>Case No:</strong> ${p.caseNo}</p>
+            <p><strong>Status:</strong> <span class="tag ${p.status}">${p.status}</span></p>
+            <p><strong>Condition:</strong> ${p.condition}</p>
+        `;
+
+        const allSessions = db.sessions.filter(s => s.patientId === patientId);
+        
+        const billedSessionIds = new Set();
+        db.income.filter(i => i.patientId === patientId).forEach(i => {
+            if (i.sessionIds && i.sessionIds.length > 0) {
+                i.sessionIds.forEach(sid => billedSessionIds.add(sid));
+            }
+        });
+        
+        // Filter unbilled
+        let unbilled = allSessions.filter(s => !billedSessionIds.has(s.id));
+
+        // --- RENDER ALL SESSIONS TABLE ---
+        const tbodyAll = document.querySelector('#dash-sessions-table tbody');
+        tbodyAll.innerHTML = '';
+        
+        // SORT: All Sessions (Newest to Oldest)
+        allSessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        allSessions.forEach(s => {
+            tbodyAll.innerHTML += `<tr><td>${formatDateForDisplay(s.date)}</td><td><span class="tag ${s.type || 'Direct'}">${s.type || 'Direct'}</span></td><td>${s.treatment}</td><td><button class="btn btn-sm btn-outline" onclick="editSession('${s.id}')">✎</button></td></tr>`;
+        });
+
+        // --- RENDER UNBILLED SESSIONS TABLE ---
+        const tbodyUn = document.querySelector('#dash-unbilled-table tbody');
+        const btnCreate = document.getElementById('btn-create-invoice');
+        tbodyUn.innerHTML = '';
+
+        if(unbilled.length === 0) {
+            tbodyUn.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--secondary);">All sessions are billed.</td></tr>';
+            // Changed colspan from 4 to 3
+            if(btnCreate) {
+                btnCreate.disabled = true;
+                btnCreate.style.opacity = '0.5';
+            }
+        } else {
+            if(btnCreate) {
+                btnCreate.disabled = false;
+                btnCreate.style.opacity = '1';
+            }
+
+            // SORT: Unbilled Sessions (Oldest to Newest - logical for billing)
+            unbilled.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // ✅ FIXED: Removed Action column with non-functional "Bill" button
+            unbilled.forEach(s => {
+                tbodyUn.innerHTML += `<tr>
+                    <td>${formatDateForDisplay(s.date)}</td>
+                    <td><span class="tag ${s.type || 'Direct'}">${s.type || 'Direct'}</span></td>
+                    <td>${s.treatment}</td>
+                </tr>`;
+            });
+        }
+        
+        // --- RENDER INCOME TABLE ---
+        const tbodyInc = document.querySelector('#dash-income-table tbody');
+        tbodyInc.innerHTML = '';
+        const patientIncome = db.income.filter(i => i.patientId === patientId);
+        
+        // SORT: Income (Newest to Oldest)
+        patientIncome.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        patientIncome.forEach(i => {
+            tbodyInc.innerHTML += `<tr>
+                <td>${i.serialNo}</td>
+                <td>${formatDateForDisplay(i.date)}</td>
+                <td>${i.receiptNo || '-'}</td>
+                <td><span class="tag ${i.type || 'Direct'}">${i.type || 'Direct'}</span></td>
+                <td>${formatCurrency(i.amount)}</td>
+                <td>${i.mode}</td>
+                <td><span class="tag ${i.status}">${i.status}</span></td>
+                <td class="cell-wrap">${formatDateForDisplay(i.note)}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="editIncome('${i.id}')">✎</button></td>
+            </tr>`;
+        });
+    }
+
+    function closePatientFocus() {
+        document.getElementById('dash-patient-select').value = '';
+        document.getElementById('patient-focus-area').style.display = 'none';
+        document.getElementById('no-patient-msg').style.display = 'block';
+        currentDashPatientId = null;
+    }
+
+    function switchDashTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        if(tabName === 'sessions') {
+            document.querySelector('.tab:nth-child(1)').classList.add('active');
+            document.getElementById('tab-sessions').classList.add('active');
+        } else {
+            document.querySelector('.tab:nth-child(2)').classList.add('active');
+            document.getElementById('tab-income').classList.add('active');
+        }
+    }
+
+    /* 
+     * RENDERING (WITH PAGINATION) 
+     */
+    function renderAll() {
+        renderDashboard();
+        renderPatients();
+        renderSessions();
+        renderIncome();
+        updatePatientSelects();
+        populateYearFilters();
+        populateFinancialYearFilter();
+        if(document.getElementById('r-patient')) receiptPopulatePatients();
+        if(document.getElementById('r-therapist')) receiptPopulateTherapists();
+        if(document.getElementById('receipt-history-table')) receiptRenderHistory();
+    }
+
+    function renderDashboard() {
+        document.getElementById('dash-total-patients').innerText = db.patients.length;
+        document.getElementById('dash-total-sessions').innerText = db.sessions.length;
+        
+        const select = document.getElementById('dash-patient-select');
+        
+        const sortedPatients = [...db.patients].sort((a, b) => {
+            const numA = parseInt(a.caseNo.replace(/\D/g, '')) || 0;
+            const numB = parseInt(b.caseNo.replace(/\D/g, '')) || 0;
+            return numB - numA;
+        });
+
+        let optsHtml = '';
+        
+        if (currentDashPatientId) {
+             optsHtml = `<option value="${currentDashPatientId}">-- Selected Patient --</option>`;
+        } else {
+            optsHtml = `<option value="">-- Select Patient --</option>`;
+        }
+        
+        optsHtml += sortedPatients.map(p => `<option value="${p.id}">${p.name} (${p.caseNo})</option>`).join('');
+        
+        select.innerHTML = optsHtml;
+
+        if(currentDashPatientId) {
+            select.value = currentDashPatientId;
+        }
+    }
+
+    function getFilteredPatients() {
+        const filter = document.getElementById('search-patient').value.toLowerCase();
+        const sStatus = document.getElementById('filter-patient-status').value;
+        const sGender = document.getElementById('filter-patient-gender').value;
+        const sStart = document.getElementById('filter-patient-start').value;
+        const sEnd = document.getElementById('filter-patient-end').value;
+
+        return db.patients.filter(p => {
+            const nameMatch = p.name.toLowerCase().includes(filter) || p.caseNo.toLowerCase().includes(filter) || p.condition.toLowerCase().includes(filter);
+            if (!nameMatch) return false;
+
+            if(sStatus !== "All" && p.status !== sStatus) return false;
+            if(sGender !== "All" && p.gender !== sGender) return false;
+
+            if(p.startDate) {
+                if(sStart && p.startDate < sStart) return false;
+                if(sEnd && p.startDate > sEnd) return false;
+            } else if (sStart || sEnd) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    function renderPatients() {
+        const filtered = getFilteredPatients();
+
+        const tbody = document.querySelector('#patients-table tbody');
+        tbody.innerHTML = '';
+        
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        if(pPatientsPage > totalPages) pPatientsPage = 1;
+        if(pPatientsPage < 1) pPatientsPage = 1;
+
+        const start = (pPatientsPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, end);
+
+        pageItems.forEach(p => {
+            const sessionCount = db.sessions.filter(s => s.patientId === p.id).length;
+            
+            tbody.innerHTML += `<tr>
+                <td>${p.caseNo}</td>
+                <td>${p.name}</td>
+                <td>${p.age}</td>
+                <td>${p.gender}</td>
+                <td>${p.condition}</td>
+                <td class="cell-wrap" title="${p.history||''}">${(p.history||'-').substring(0,30)}${p.history && p.history.length>30?'...':''}</td>
+                <td>${p.referredBy || '-'}</td>
+                <td>${p.startDate || '-'}</td>
+                <td><span class="tag ${p.status||'Active'}">${p.status||'Active'}</span></td>
+                <td><strong>${sessionCount}</strong></td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="quickLogSession('${p.id}')" title="Log Session">Log Session</button>
+                    <button class="btn btn-sm btn-outline" onclick="editPatient('${p.id}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePatient('${p.id}')">Del</button>
+                </td>
+            </tr>`;
+        });
+
+        updatePaginationControls('view-patients', filtered.length, pPatientsPage, totalPages, () => { pPatientsPage--; renderPatients(); }, () => { pPatientsPage++; renderPatients(); });
+    }
+
+    function getFilteredSessions() {
+        const sName = document.getElementById('search-session-patient').value.toLowerCase();
+        const sType = document.getElementById('filter-session-type').value;
+        const sStart = document.getElementById('filter-session-start').value;
+        const sEnd = document.getElementById('filter-session-end').value;
+        const sYear = document.getElementById('filter-session-year').value;
+        
+        return db.sessions.filter(s => {
+            const p = getPatient(s.patientId);
+            if(!p) return false;
+            const nameMatch = p.name.toLowerCase().includes(sName);
+            if(!nameMatch) return false;
+            
+            const sTypeVal = s.type || 'Direct'; 
+            if(sType !== "All" && sTypeVal !== sType) return false;
+
+            if(sYear !== "All") { if(new Date(s.date).getFullYear() != sYear) return false; }
+            if(sStart && s.date < sStart) return false;
+            if(sEnd && s.date > sEnd) return false;
+            return true;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function renderSessions() {
+        const filtered = getFilteredSessions();
+        const tbody = document.querySelector('#sessions-table tbody');
+        tbody.innerHTML = '';
+
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        if(pSessionsPage > totalPages) pSessionsPage = 1;
+        if(pSessionsPage < 1) pSessionsPage = 1;
+
+        const start = (pSessionsPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, end);
+
+        pageItems.forEach(s => {
+            const p = getPatient(s.patientId);
+            const sTypeVal = s.type || 'Direct';
+            tbody.innerHTML += `<tr>
+                <td>${formatDateForDisplay(s.date)}</td>
+                <td><span class="tag ${sTypeVal}">${sTypeVal}</span></td>
+                <td>${p.name}</td>
+                <td>${s.treatment}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="editSession('${s.id}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSession('${s.id}')">Del</button>
+                </td>
+            </tr>`;
+        });
+
+        updatePaginationControls('view-sessions', filtered.length, pSessionsPage, totalPages, () => { pSessionsPage--; renderSessions(); }, () => { pSessionsPage++; renderSessions(); });
+    }
+
+    function getFilteredIncome() {
+        const sTxt = document.getElementById('search-income').value.toLowerCase();
+        const sType = document.getElementById('filter-income-type').value;
+        const sStat = document.getElementById('filter-income-status').value;
+        const sMonth = document.getElementById('filter-income-month').value;
+        const sYear = document.getElementById('filter-income-year').value;
+        const sFY = document.getElementById('filter-income-fy').value;
+        
+        return db.income.filter(i => {
+            const p = getPatient(i.patientId);
+            if(!p) return false;
+            const txtMatch = p.name.toLowerCase().includes(sTxt) || i.receiptNo?.toLowerCase().includes(sTxt) || (i.serialNo||'').toLowerCase().includes(sTxt);
+            if(!txtMatch) return false;
+
+            const iType = i.type || 'Direct';
+            if(sType !== "All" && iType !== sType) return false;
+
+            if(sStat !== "All" && i.status !== sStat) return false;
+            if(sYear !== "All") { 
+                const incomeYear = parseInt(i.date.split('-')[0]);
+                if(incomeYear != sYear) return false; 
+            }
+            if(sMonth !== "All") { 
+                const incomeMonth = parseInt(i.date.split('-')[1]) - 1; // Convert to 0-based
+                if(incomeMonth != parseInt(sMonth)) return false; 
+            }
+
+            // ✅ FIXED: Financial Year Filter - Parse dates consistently to avoid timezone issues
+            if(sFY !== "All") {
+                const fyStartYear = parseInt(sFY.split('-')[0]);
+                const fyEndYear = fyStartYear + 1;
+                
+                // Parse income date components directly from string (YYYY-MM-DD format)
+                const [incYear, incMonth, incDay] = i.date.split('-').map(Number);
+                
+                // Check if income date falls within FY range: April 1 to March 31
+                // April (4) to December (12): belongs to fyStartYear's FY
+                // January (1) to March (3): belongs to previous year's FY (which is fyStartYear)
+                const isInFY = (
+                    // Case 1: Date is in Apr-Dec of start year
+                    (incYear === fyStartYear && incMonth >= 4) ||
+                    // Case 2: Date is in Jan-Mar of end year
+                    (incYear === fyEndYear && incMonth >= 1 && incMonth <= 3)
+                );
+                
+                if (!isInFY) return false;
+            }
+
+            return true;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function renderIncome() {
+        const filtered = getFilteredIncome();
+        const tbody = document.querySelector('#income-table tbody');
+        tbody.innerHTML = '';
+
+        const total = filtered.reduce((sum, i) => sum + parseFloat(i.amount||0), 0);
+        const pending = filtered.filter(i => i.status==='Pending').reduce((sum, i) => sum + parseFloat(i.amount||0), 0);
+        
+        const hospitalItems = filtered.filter(i => (i.type || 'Direct') === 'Hospital');
+        const hospitalMoney = hospitalItems.reduce((sum, i) => sum + parseFloat(i.amount||0), 0);
+        const hospitalCount = hospitalItems.reduce((sum, i) => {
+    const units = parseInt(i.units);
+    return sum + (units > 0 ? units : 1);
+}, 0);
+
+        document.getElementById('view-income-total').innerText = formatCurrency(total);
+        document.getElementById('view-income-pending').innerText = formatCurrency(pending);
+        document.getElementById('view-income-hospital-money').innerText = formatCurrency(hospitalMoney);
+        document.getElementById('view-income-hospital-sessions').innerText = hospitalCount;
+
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        if(pIncomePage > totalPages) pIncomePage = 1;
+        if(pIncomePage < 1) pIncomePage = 1;
+
+        const start = (pIncomePage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, end);
+
+        pageItems.forEach(i => {
+            const p = getPatient(i.patientId);
+            const iType = i.type || 'Direct';
+            tbody.innerHTML += `<tr>
+                <td>${i.serialNo}</td>
+                <td>${formatDateForDisplay(i.date)}</td>
+                <td>${i.receiptNo || '-'}</td>
+                <td><span class="tag ${iType}">${iType}</span></td>
+                <td>${p.name}</td>
+                <td>${formatCurrency(i.amount)}</td>
+                <td><span class="tag ${i.status}">${i.status}</span></td>
+                <td>${i.mode}</td>
+                <td class="cell-wrap">${formatDateForDisplay(i.note)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="editIncome('${i.id}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteIncome('${i.id}')">Del</button>
+                </td>
+            </tr>`;
+        });
+
+        updatePaginationControls('view-income', filtered.length, pIncomePage, totalPages, () => { pIncomePage--; renderIncome(); }, () => { pIncomePage++; renderIncome(); });
+    }
+
+    function updatePaginationControls(viewId, total, current, totalPages, prevFn, nextFn) {
+        let wrapper = document.getElementById(viewId).querySelector('.pagination-controls');
+        if(!wrapper) {
+            const card = document.getElementById(viewId).querySelector('.card');
+            wrapper = document.createElement('div');
+            wrapper.className = 'pagination-controls';
+            card.appendChild(wrapper);
+        }
+
+        const startShow = total === 0 ? 0 : (current - 1) * ITEMS_PER_PAGE + 1;
+        const endShow = Math.min(current * ITEMS_PER_PAGE, total);
+
+        wrapper.innerHTML = `
+            <span class="pagination-info">${startShow}-${endShow} of ${total}</span>
+            <button class="btn btn-sm btn-outline" onclick="(${prevFn.toString()})()" ${current === 1 ? 'disabled' : ''}>Prev</button>
+            <span>Page ${current} of ${totalPages || 1}</span>
+            <button class="btn btn-sm btn-outline" onclick="(${nextFn.toString()})()" ${current >= totalPages ? 'disabled' : ''}>Next</button>
+        `;
+    }
+
+    function populateYearFilters() {
+        const sessionDates = db.sessions ? db.sessions.map(s=>s.date) : [];
+        const dates = [...sessionDates, ...db.income.map(i=>i.date)];
+        const years = [...new Set(dates.map(d => new Date(d).getFullYear()))].sort().reverse();
+        
+        const opts = `<option value="All">All Years</option>` + years.map(y => `<option value="${y}">${y}</option>`).join('');
+        document.getElementById('filter-session-year').innerHTML = opts;
+        document.getElementById('filter-income-year').innerHTML = opts;
+    }
+
+    function updatePatientSelects() {
+        const sessionOpts = db.patients
+            .filter(p => p.status === 'Active')
+            .map(p => `<option value="${p.id}">${p.name} (${p.caseNo})</option>`)
+            .join('');
+            
+        const incomeOpts = db.patients.map(p => `<option value="${p.id}">${p.name} (${p.caseNo})</option>`).join('');
+
+        const def = `<option value="">Select Patient</option>`;
+        document.getElementById('s-patientId').innerHTML = def + sessionOpts;
+        document.getElementById('i-patientId').innerHTML = def + incomeOpts;
+    }
+
+    /* 
+     * MODAL LOGIC 
+     */
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        document.querySelectorAll('form').forEach(f => f.reset());
+        document.getElementById('billing-session-list').innerHTML = '';
+        document.getElementById('session-connector-area').style.display = 'none';
+    }
+
+    /* --- PATIENTS --- */
+    function openPatientModal() {
+        document.getElementById('form-patient').reset();
+        document.getElementById('p-id').value = '';
+        document.getElementById('modal-patient-title').innerText = "Add New Patient";
+        openModal('modal-patient');
+    }
+    function editPatient(id) {
+        const p = db.patients.find(x => x.id === id);
+        document.getElementById('p-id').value = p.id;
+        document.getElementById('p-name').value = p.name;
+        document.getElementById('p-caseNo').value = p.caseNo;
+        document.getElementById('p-age').value = p.age;
+        document.getElementById('p-gender').value = p.gender;
+        document.getElementById('p-condition').value = p.condition;
+        document.getElementById('p-startDate').value = p.startDate || '';
+        document.getElementById('p-status').value = p.status || 'Active';
+        document.getElementById('p-referredBy').value = p.referredBy || '';
+        document.getElementById('p-history').value = p.history || '';
+        document.getElementById('p-mobile').value = p.mobile || '';
+        document.getElementById('p-address').value = p.address || '';
+        document.getElementById('modal-patient-title').innerText = "Edit Patient";
+        openModal('modal-patient');
+    }
+    function savePatient() {
+        const id = document.getElementById('p-id').value;
+        const data = {
+            name: document.getElementById('p-name').value.trim(),
+            caseNo: document.getElementById('p-caseNo').value.trim(),
+            age: document.getElementById('p-age').value,
+            gender: document.getElementById('p-gender').value,
+            condition: document.getElementById('p-condition').value,
+            startDate: document.getElementById('p-startDate').value,
+            status: document.getElementById('p-status').value,
+            referredBy: document.getElementById('p-referredBy').value.trim(),
+            history: document.getElementById('p-history').value.trim(),
+            mobile: document.getElementById('p-mobile').value.trim(),
+            address: document.getElementById('p-address').value.trim()
+        };
+        if(!data.name || !data.caseNo) return showToast('Name & Case No required', 'error');
+        const dup = db.patients.find(p => p.caseNo.toLowerCase() === data.caseNo.toLowerCase() && p.id !== id);
+        if(dup) return showToast('Case No already exists!', 'error');
+
+        if(id) { db.patients[db.patients.findIndex(x => x.id === id)] = { ...db.patients.find(x=>x.id===id), ...data }; }
+        else { db.patients.push({ id: generateId(), ...data }); }
+        saveDB(); closeModal('modal-patient'); showToast('Patient Saved');
+    }
+    function deletePatient(id) {
+        if(!confirm('Delete Patient? This removes linked records too.')) return;
+        db.patients = db.patients.filter(x => x.id !== id);
+        db.sessions = db.sessions.filter(x => x.patientId !== id);
+        db.income = db.income.filter(x => x.patientId !== id);
+        db.receipts = (db.receipts || []).filter(x => x.patientId !== id);
+        saveDB(); showToast('Deleted');
+    }
+
+    /* --- SESSIONS --- */
+    function quickLogSession(patientId, specificDate = null) {
+        openSessionModal();
+        document.getElementById('s-patientId').value = patientId;
+        if(specificDate) {
+            document.getElementById('s-date').value = specificDate;
+        } else {
+            document.getElementById('s-date').value = new Date().toISOString().split('T')[0];
+        }
+    }
+
+    function openSessionModal() { 
+        document.getElementById('form-session').reset(); 
+        document.getElementById('s-id').value = ''; 
+        openModal('modal-session'); 
+    }
+    
+    function editSession(id) {
+        const s = db.sessions.find(x => x.id === id);
+        document.getElementById('s-id').value = s.id;
+        document.getElementById('s-patientId').value = s.patientId;
+        document.getElementById('s-date').value = s.date;
+        document.getElementById('s-type').value = s.type || 'Direct';
+        document.getElementById('s-treatment').value = s.treatment;
+        document.getElementById('s-notes').value = s.notes;
+        openModal('modal-session');
+    }
+    function saveSession() {
+        const id = document.getElementById('s-id').value;
+        const data = {
+            patientId: document.getElementById('s-patientId').value,
+            date: document.getElementById('s-date').value,
+            type: document.getElementById('s-type').value,
+            treatment: document.getElementById('s-treatment').value,
+            notes: document.getElementById('s-notes').value
+        };
+        if(!data.patientId || !data.date) return showToast('Fields missing', 'error');
+        if(id) { db.sessions[db.sessions.findIndex(x=>x.id===id)] = {...db.sessions.find(x=>x.id===id), ...data}; }
+        else { db.sessions.push({ id: generateId(), ...data }); }
+        saveDB(); closeModal('modal-session'); showToast('Session Saved');
+    }
+    function deleteSession(id) { if(confirm('Delete Session?')) { db.sessions = db.sessions.filter(x=>x.id!==id); saveDB(); } }
+
+    /* --- INCOME --- */
+    function openIncomeModal() { 
+        document.getElementById('form-income').reset(); 
+        document.getElementById('i-id').value = ''; 
+        document.getElementById('i-serialNo').value = generateSerial();
+        document.getElementById('billing-session-list').innerHTML = '';
+        document.getElementById('session-connector-area').style.display = 'none';
+        openModal('modal-income'); 
+    }
+
+    function openIncomeModalForDash() {
+        openIncomeModal();
+        if(currentDashPatientId) {
+            document.getElementById('i-patientId').value = currentDashPatientId;
+            loadSessionsForBilling();
+        }
+    }
+    
+    function loadSessionsForBilling() {
+        const patientId = document.getElementById('i-patientId').value;
+        const container = document.getElementById('billing-session-list');
+        const area = document.getElementById('session-connector-area');
+        container.innerHTML = ''; 
+
+        if(!patientId) {
+            area.style.display = 'none';
+            return;
+        }
+
+        const billedSessionIds = new Set();
+        db.income.filter(i => i.patientId === patientId).forEach(i => {
+            if (i.sessionIds && i.sessionIds.length > 0) {
+                i.sessionIds.forEach(sid => billedSessionIds.add(sid));
+            }
+        });
+
+        const sessions = db.sessions.filter(s => s.patientId === patientId && !billedSessionIds.has(s.id));
+
+        if(sessions.length > 0) {
+            area.style.display = 'block';
+            sessions.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const selectAllDiv = document.createElement('div');
+            selectAllDiv.className = 'session-checkbox-item';
+            selectAllDiv.style.borderBottom = '1px solid #dee2e6';
+            selectAllDiv.style.marginBottom = '5px';
+            selectAllDiv.style.paddingBottom = '5px';
+            selectAllDiv.innerHTML = `
+                <input type="checkbox" id="billing-select-all" onchange="toggleSelectAllBilling(this)">
+                <strong>Select All Sessions</strong>
+            `;
+            container.appendChild(selectAllDiv);
+
+            sessions.forEach(s => {
+                const label = document.createElement('label');
+                label.className = 'session-checkbox-item';
+                label.innerHTML = `
+                    <input type="checkbox" class="billing-session-checkbox" value="${s.date}" data-treatment="${s.treatment}" data-id="${s.id}" onchange="updateBillDetails()">
+                            <strong>${formatDateForDisplay(s.date)}</strong> (${s.type || 'Direct'}) - ${s.treatment.substring(0, 25)}
+                `;
+                container.appendChild(label);
+            });
+        } else {
+            area.style.display = 'none';
+        }
+    }
+
+    function toggleSelectAllBilling(source) {
+        const checkboxes = document.querySelectorAll('.billing-session-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateBillDetails();
+    }
+
+    function updateBillDetails() {
+        const checkboxes = document.querySelectorAll('.billing-session-checkbox:checked');
+        const unitsInput = document.getElementById('i-units');
+        const noteInput = document.getElementById('i-note');
+        const selectAllCheckbox = document.getElementById('billing-select-all');
+        
+        const allCheckboxes = document.querySelectorAll('.billing-session-checkbox');
+        if(allCheckboxes.length > 0) {
+            selectAllCheckbox.checked = allCheckboxes.length === checkboxes.length;
+        }
+        
+        unitsInput.value = checkboxes.length;
+        
+        if(checkboxes.length > 0) {
+            const dates = Array.from(checkboxes).map(cb => cb.value).sort((a,b) => new Date(a) - new Date(b));
+            const formattedDates = dates.map(d => formatDateForDisplay(d));
+            noteInput.value = formattedDates.join(', ');
+        } else {
+            noteInput.value = '';
+        }
+    }
+
+    function editIncome(id) {
+        const i = db.income.find(x => x.id === id);
+        document.getElementById('i-id').value = i.id;
+        document.getElementById('i-patientId').value = i.patientId;
+        document.getElementById('i-date').value = i.date;
+        document.getElementById('i-amount').value = i.amount;
+        document.getElementById('i-units').value = i.units;
+        document.getElementById('i-serialNo').value = i.serialNo;
+        document.getElementById('i-receiptNo').value = i.receiptNo || '';
+        document.getElementById('i-type').value = i.type || 'Direct';
+        document.getElementById('i-status').value = i.status;
+        document.getElementById('i-mode').value = i.mode;
+        document.getElementById('i-note').value = i.note;
+        document.getElementById('session-connector-area').style.display = 'none';
+        openModal('modal-income');
+    }
+    function saveIncome() {
+        const id = document.getElementById('i-id').value;
+        const data = {
+            patientId: document.getElementById('i-patientId').value,
+            date: document.getElementById('i-date').value,
+            amount: parseFloat(document.getElementById('i-amount').value),
+            units: document.getElementById('i-units').value,
+            receiptNo: document.getElementById('i-receiptNo').value.trim(),
+            serialNo: document.getElementById('i-serialNo').value.trim(),
+            type: document.getElementById('i-type').value,
+            status: document.getElementById('i-status').value,
+            mode: document.getElementById('i-mode').value,
+            note: document.getElementById('i-note').value
+        };
+        if(!data.patientId || !data.date || !data.amount) return showToast('Missing Mandatory Fields', 'error');
+        
+        if (document.getElementById('session-connector-area').style.display !== 'none') {
+            const checkboxes = document.querySelectorAll('.billing-session-checkbox:checked');
+            if(checkboxes.length > 0) {
+                data.sessionIds = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+            }
+        }
+        
+        if(data.serialNo) {
+            if(db.income.some(i => i.serialNo === data.serialNo && i.id !== id)) return showToast('Serial No exists!', 'error');
+        }
+        if(data.receiptNo) {
+            if(db.income.some(i => i.receiptNo === data.receiptNo && i.id !== id)) return showToast('Receipt No exists!', 'error');
+        }
+
+        if(id) { db.income[db.income.findIndex(x=>x.id===id)] = {...db.income.find(x=>x.id===id), ...data}; }
+        else { db.income.push({ id: generateId(), ...data }); }
+        saveDB(); closeModal('modal-income'); showToast('Income Saved');
+    }
+    function deleteIncome(id) { if(confirm('Delete Record?')) { db.income = db.income.filter(x=>x.id!==id); saveDB(); } }
+
+    /* 
+     * INVOICE MODAL LOGIC 
+     */
+    function openInvoiceModal() {
+        const patientId = document.getElementById('dash-patient-select').value;
+        if(!patientId) return;
+        currentInvoicePatientId = patientId;
+
+        const p = getPatient(patientId);
+        document.getElementById('inv-patient-name').value = `${p.name} (${p.caseNo})`;
+        document.getElementById('inv-patient-id').value = patientId;
+        document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('inv-amount').value = '';
+        document.getElementById('inv-message').value = '';
+        document.getElementById('inv-serial').value = generateSerial();
+
+        const container = document.getElementById('invoice-session-list');
+        container.innerHTML = '';
+
+        const billedSessionIds = new Set();
+        db.income.filter(i => i.patientId === patientId).forEach(i => {
+            if(i.sessionIds) i.sessionIds.forEach(sid => billedSessionIds.add(sid));
+        });
+        
+        const unbilled = db.sessions.filter(s => s.patientId === patientId && !billedSessionIds.has(s.id));
+
+        if(unbilled.length === 0) {
+            container.innerHTML = '<div style="color:var(--secondary); font-style:italic;">All sessions are billed.</div>';
+        } else {
+            unbilled.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            const selectAllDiv = document.createElement('div');
+            selectAllDiv.className = 'session-checkbox-item';
+            selectAllDiv.style.borderBottom = '1px solid #dee2e6';
+            selectAllDiv.style.marginBottom = '5px';
+            selectAllDiv.style.paddingBottom = '5px';
+            selectAllDiv.innerHTML = `
+                <input type="checkbox" id="invoice-select-all" checked onchange="toggleSelectAllInvoice(this)">
+                <strong>Select All Sessions</strong>
+            `;
+            container.appendChild(selectAllDiv);
+
+            unbilled.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'session-checkbox-item';
+                div.innerHTML = `
+                    <input type="checkbox" class="invoice-session-checkbox" checked value="${s.id}" data-date="${s.date}" data-treatment="${s.treatment}">
+                            <strong>${formatDateForDisplay(s.date)}</strong> (${s.type || 'Direct'}) - ${s.treatment.substring(0, 30)}`;
+                container.appendChild(div);
+            });
+        }
+        openModal('modal-invoice');
+    }
+
+    function toggleSelectAllInvoice(source) {
+        const checkboxes = document.querySelectorAll('.invoice-session-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+
+    function saveInvoice() {
+        const patientId = document.getElementById('inv-patient-id').value;
+        const date = document.getElementById('inv-date').value;
+        const amount = parseFloat(document.getElementById('inv-amount').value);
+        const message = document.getElementById('inv-message').value;
+        const serial = document.getElementById('inv-serial').value.trim();
+        
+        const checked = document.querySelectorAll('.invoice-session-checkbox:checked');
+        const sessionIds = Array.from(checked).map(cb => cb.getAttribute('value'));
+        
+        if (!patientId || !amount) return showToast('Patient & Amount required', 'error');
+        if (sessionIds.length === 0) return showToast('Select at least one session to bill', 'error');
+        
+        const newIncome = {
+            id: generateId(),
+            patientId: patientId,
+            date: date,
+            amount: amount,
+            units: sessionIds.length,
+            receiptNo: '',
+            serialNo: serial,
+            type: 'Direct',
+            status: 'Pending',
+            mode: 'Invoice',
+            note: Array.from(checked).map(cb => cb.getAttribute('data-date')).sort((a,b) => new Date(a) - new Date(b)).join(', '),
+            sessionIds: sessionIds
+        };
+
+        if(message) newIncome.message = message;
+
+        db.income.push(newIncome);
+        saveDB();
+        
+        closeModal('modal-invoice');
+        showToast('Invoice Created successfully');
+    }
+
+    /* 
+     * EXPORT FUNCTIONS
+     */
+    function escapeCSV(str) {
+        if (!str) return '""';
+        str = String(str);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            str = '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+    }
+
+    function exportAllData() {
+        let csvContent = '';
+        const today = new Date().toISOString().slice(0, 10);
+        
+        // Export Patients
+        csvContent += '=== PATIENTS ===\n';
+        csvContent += '"Name","CaseNo","Age","Gender","Condition","History","Referred By","Start Date","Status","Mobile","Address"\n';
+        db.patients.forEach(p => {
+            csvContent += `${escapeCSV(p.name)},${escapeCSV(p.caseNo)},${escapeCSV(p.age)},${escapeCSV(p.gender)},${escapeCSV(p.condition)},${escapeCSV(p.history)},${escapeCSV(p.referredBy)},${escapeCSV(p.startDate)},${escapeCSV(p.status)},${escapeCSV(p.mobile)},${escapeCSV(p.address)}\n`;
+        });
+        csvContent += '\n';
+
+        // Export Sessions
+        csvContent += '=== SESSIONS ===\n';
+        csvContent += '"Date","CaseNo","Treatment","Notes","Type"\n';
+        db.sessions.forEach(s => {
+            const p = getPatient(s.patientId);
+            csvContent += `${escapeCSV(s.date)},${escapeCSV(p ? p.caseNo : '')},${escapeCSV(s.treatment)},${escapeCSV(s.notes)},${escapeCSV(s.type || 'Direct')}\n`;
+        });
+        csvContent += '\n';
+
+        // Export Income
+        csvContent += '=== INCOME ===\n';
+        csvContent += '"Date","CaseNo","Serial No","Amount","Units","ReceiptNo","Status","Mode","Note","Type"\n';
+        db.income.forEach(i => {
+            const p = getPatient(i.patientId);
+            csvContent += `${escapeCSV(i.date)},${escapeCSV(p ? p.caseNo : '')},${escapeCSV(i.serialNo)},${escapeCSV(i.amount)},${escapeCSV(i.units)},${escapeCSV(i.receiptNo)},${escapeCSV(i.status)},${escapeCSV(i.mode)},${escapeCSV(i.note)},${escapeCSV(i.type || 'Direct')}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `all_data_export_${today}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('All data exported successfully!');
+    }
+
+    function exportFilteredPatients() {
+        const filtered = getFilteredPatients();
+        if (filtered.length === 0) {
+            showToast('No patients to export', 'error');
+            return;
+        }
+
+        let csvContent = '"Name","CaseNo","Age","Gender","Condition","History","Referred By","Start Date","Status"\n';
+        filtered.forEach(p => {
+            csvContent += `${escapeCSV(p.name)},${escapeCSV(p.caseNo)},${escapeCSV(p.age)},${escapeCSV(p.gender)},${escapeCSV(p.condition)},${escapeCSV(p.history)},${escapeCSV(p.referredBy)},${escapeCSV(p.startDate)},${escapeCSV(p.status)}\n`;
+        });
+
+        const today = new Date().toISOString().slice(0, 10);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `patients_filtered_${today}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Exported ${filtered.length} patients`);
+    }
+
+    function exportFilteredSessions() {
+        const filtered = getFilteredSessions();
+        if (filtered.length === 0) {
+            showToast('No sessions to export', 'error');
+            return;
+        }
+
+        let csvContent = '"Date","CaseNo","Patient Name","Treatment","Notes","Type"\n';
+        filtered.forEach(s => {
+            const p = getPatient(s.patientId);
+            csvContent += `${escapeCSV(s.date)},${escapeCSV(p ? p.caseNo : '')},${escapeCSV(p ? p.name : '')},${escapeCSV(s.treatment)},${escapeCSV(s.notes)},${escapeCSV(s.type || 'Direct')}\n`;
+        });
+
+        const today = new Date().toISOString().slice(0, 10);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `sessions_filtered_${today}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Exported ${filtered.length} sessions`);
+    }
+
+    function exportFilteredIncome() {
+        const filtered = getFilteredIncome();
+        if (filtered.length === 0) {
+            showToast('No income records to export', 'error');
+            return;
+        }
+
+        let csvContent = '"Date","CaseNo","Patient Name","Serial No","Amount","Units","ReceiptNo","Status","Mode","Note","Type"\n';
+        filtered.forEach(i => {
+            const p = getPatient(i.patientId);
+            csvContent += `${escapeCSV(i.date)},${escapeCSV(p ? p.caseNo : '')},${escapeCSV(p ? p.name : '')},${escapeCSV(i.serialNo)},${escapeCSV(i.amount)},${escapeCSV(i.units)},${escapeCSV(i.receiptNo)},${escapeCSV(i.status)},${escapeCSV(i.mode)},${escapeCSV(i.note)},${escapeCSV(i.type || 'Direct')}\n`;
+        });
+
+        const today = new Date().toISOString().slice(0, 10);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `income_filtered_${today}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Exported ${filtered.length} income records`);
+    }
+
+    /* 
+     * IMPORT / EXPORT LOGIC (JSON Backup)
+     */
+    function exportData(type) {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        const link = document.createElement("a");
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", `clinic_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function importJSON(input) {
+        const file = input.files[0];
+        if(!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const newDB = JSON.parse(e.target.result);
+                if(newDB.sessions || newDB.visits) {
+                    if(confirm("Restore Backup?\nThis will overwrite all current data!")) {
+                        if(newDB.visits && !newDB.sessions) {
+                            newDB.sessions = newDB.visits;
+                            delete newDB.visits;
+                        }
+                        db = newDB;
+                        saveDB();
+                        showToast("Data Restored Successfully!");
+                        pPatientsPage = 1; pSessionsPage = 1; pIncomePage = 1;
+                        renderAll();
+                    }
+                } else {
+                    showToast("Invalid JSON format.", 'error');
+                }
+            } catch(err) {
+                showToast("Error reading JSON file", 'error');
+            }
+            input.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    function resetApp() {
+        if(confirm("Are you sure you want to delete ALL data and reset the app? This cannot be undone.")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }
+
+    /* 
+     * CSV PARSING HELPER & IMPORT
+     */
+    function parseCSVLine(text) {
+        const re_valid = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+        return text.split(re_valid).map(function(val) {
+            let v = val.trim();
+            if (v.startsWith('"') && v.endsWith('"')) {
+                v = v.slice(1, -1);
+            }
+            return v;
+        });
+    }
+
+    function importCSV(input) {
+        const file = input.files[0];
+        if(!file) return;
+        
+        showToast('Starting import... Please wait.', 'info');
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const cleanText = text.replace(/^\uFEFF/, '');
+            const lines = cleanText.split('\n');
+            if(lines.length < 2) { showToast("File appears empty or invalid", 'error'); input.value = ''; return; }
+            
+            const headers = parseCSVLine(lines[0]);
+            const normalize = (s) => s ? s.replace(/"/g, '').trim().toLowerCase() : '';
+            const normalizedHeaders = headers.map(normalize);
+            
+            const isPatient = normalizedHeaders.includes('referred by') && normalizedHeaders.includes('history');
+            const isIncome = normalizedHeaders.includes('amount');
+            const isSession = normalizedHeaders.includes('treatment');
+
+            const headerMap = {};
+            headers.forEach((h, i) => { headerMap[normalize(h)] = i; });
+
+            let count = 0;
+            let errorCount = 0;
+            let currentIndex = 1;
+            
+            const CHUNK_SIZE = 100;
+            
+            function processChunk() {
+                const end = Math.min(currentIndex + CHUNK_SIZE, lines.length);
+                
+                for(; currentIndex < end; currentIndex++) {
+                    if(!lines[currentIndex].trim()) continue;
+                    const row = parseCSVLine(lines[currentIndex]); 
+                    if(row.length < 2) continue;
+
+                    try {
+                        if(isPatient) {
+                            const caseNo = row[headerMap['caseno']]?.trim();
+                            if(!caseNo) continue; 
+                            if(getPatientByCaseNo(caseNo)) continue; 
+                            db.patients.push({
+                                id: generateId(),
+                                name: row[headerMap['name']]?.trim() || '',
+                                caseNo: caseNo,
+                                age: row[headerMap['age']]?.trim() || '',
+                                gender: row[headerMap['gender']]?.trim() || 'O',
+                                condition: row[headerMap['condition']]?.trim() || '',
+                                history: row[headerMap['history']]?.trim() || '',
+                                referredBy: row[headerMap['referred by']]?.trim() || '',
+                                startDate: row[headerMap['start date']]?.trim() || '',
+                                status: row[headerMap['status']]?.trim() || 'Active'
+                            });
+                            count++;
+                        }
+                        else if (isSession) {
+                            const caseNo = row[headerMap['caseno']]?.trim();
+                            const patient = getPatientByCaseNo(caseNo);
+                            if(!patient) { errorCount++; continue; }
+                            db.sessions.push({
+                                id: generateId(),
+                                patientId: patient.id,
+                                date: row[headerMap['date']]?.trim() || '',
+                                treatment: row[headerMap['treatment']]?.trim() || '',
+                                notes: row[headerMap['notes']]?.trim() || '',
+                                type: row[headerMap['type']]?.trim() || 'Direct'
+                            });
+                            count++;
+                        }
+                        else if (isIncome) {
+                            const caseNo = row[headerMap['caseno']]?.trim();
+                            const patient = getPatientByCaseNo(caseNo);
+                            if(!patient) { errorCount++; continue; }
+                            const rec = row[headerMap['receiptno']]?.trim() || row[headerMap['receipt']]?.trim();
+                            const serial = row[headerMap['serial no']]?.trim() || row[headerMap['serialno']]?.trim();
+                            if(!rec && !serial) continue;
+                            if(db.income.find(x => (x.receiptNo === rec && rec) || (x.serialNo === serial && serial)) ) continue; 
+                            db.income.push({
+                                id: generateId(),
+                                patientId: patient.id,
+                                date: row[headerMap['date']]?.trim() || '',
+                                amount: parseFloat(row[headerMap['amount']]) || 0,
+                                units: row[headerMap['units']]?.trim() || '',
+                                receiptNo: rec,
+                                serialNo: serial,
+                                status: row[headerMap['status']]?.trim() || 'Completed',
+                                mode: row[headerMap['mode']]?.trim() || 'Other',
+                                note: row[headerMap['note']]?.trim() || '',
+                                type: row[headerMap['type']]?.trim() || 'Direct',
+                                sessionIds: []
+                            });
+                            count++;
+                        }
+                    } catch(err) { console.error("Row Import Error:", err, row); }
+                }
+
+                if (currentIndex < lines.length) {
+                    showToast(`Importing ${currentIndex}/${lines.length} rows...`, 'info');
+                    setTimeout(processChunk, 10);
+                } else {
+                    saveDB();
+                    let msg = `Imported ${count} entries successfully.`;
+                    if(errorCount > 0) msg += ` Skipped ${errorCount} rows (Patient not found).`;
+                    showToast(msg);
+                    input.value = '';
+                }
+            }
+            
+            processChunk();
+        };
+        reader.readAsText(file);
+    }
+
+    function sortTable(tableId, colIndex) {
+        const table = document.getElementById(tableId);
+        let switching = true;
+        let dir = "asc"; 
+        while (switching) {
+            switching = false;
+            const rows = table.rows;
+            for (let i = 1; i < (rows.length - 1); i++) {
+                let shouldSwitch = false;
+                const x = rows[i].getElementsByTagName("TD")[colIndex];
+                const y = rows[i + 1].getElementsByTagName("TD")[colIndex];
+                if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) { shouldSwitch = true; break; }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            } else {
+                dir = dir === "asc" ? "desc" : "asc";
+                switching = true; 
+            }
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', initDB);
+
+/* =========================================================
+   COMBINED RECEIPT BUILDER MODULE
+   Uses the Patient Register localStorage database as the single source of truth.
+   ========================================================= */
+function receiptInit() {
+    db.receipts = Array.isArray(db.receipts) ? db.receipts : [];
+    db.therapists = Array.isArray(db.therapists) ? db.therapists : [];
+    receiptPopulateTherapists();
+    receiptPopulatePatients();
+    receiptNew();
+    receiptRenderHistory();
+}
+
+function receiptPopulateTherapists() {
+    const select = document.getElementById('r-therapist');
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = '<option value="">-- Select Physiotherapist --</option>';
+    (db.therapists || []).forEach(t => {
+        const o=document.createElement('option'); o.value=t.id; o.textContent=t.name + (t.qualification ? ' — '+t.qualification : ''); select.appendChild(o);
+    });
+    if(current) select.value=current;
+    receiptRenderTherapists();
+}
+function receiptPopulatePatients() {
+    const select=document.getElementById('r-patient'); if(!select) return;
+    const current=select.value;
+    select.innerHTML='<option value="">-- Select Patient --</option>';
+    [...db.patients].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+        const o=document.createElement('option'); o.value=p.id; o.textContent=p.name+' ('+(p.caseNo||'No case')+')'; select.appendChild(o);
+    });
+    if(current) select.value=current;
+}
+function receiptOpenTherapistModal(id='') {
+    document.getElementById('r-therapist-id').value=id||'';
+    document.getElementById('r-therapist-modal-title').textContent=id?'Edit Physiotherapist':'Add Physiotherapist';
+    const t=(db.therapists||[]).find(x=>x.id===id);
+    document.getElementById('r-new-doc-name').value=t?.name||'';
+    document.getElementById('r-new-doc-qual').value=t?.qualification||'';
+    document.getElementById('r-new-doc-reg').value=t?.regNo||'';
+    receiptRenderTherapists();
+    openModal('modal-therapist-combined');
+}
+function receiptSaveTherapist() {
+    const id=document.getElementById('r-therapist-id').value;
+    const data={name:document.getElementById('r-new-doc-name').value.trim(),qualification:document.getElementById('r-new-doc-qual').value.trim(),regNo:document.getElementById('r-new-doc-reg').value.trim()};
+    if(!data.name) return showToast('Physiotherapist name required','error');
+    if(id) { const i=db.therapists.findIndex(t=>t.id===id); if(i>=0) db.therapists[i]={...db.therapists[i],...data}; }
+    else db.therapists.push({id:generateId(),...data,createdAt:new Date().toISOString()});
+    saveDB(); receiptPopulateTherapists(); document.getElementById('r-therapist-id').value=''; document.getElementById('r-new-doc-name').value=''; document.getElementById('r-new-doc-qual').value=''; document.getElementById('r-new-doc-reg').value=''; document.getElementById('r-therapist-modal-title').textContent='Add Physiotherapist'; showToast('Physiotherapist saved');
+}
+function receiptRenderTherapists() {
+    const tbody=document.querySelector('#r-therapist-table tbody'); if(!tbody) return;
+    tbody.innerHTML='';
+    (db.therapists||[]).forEach(t=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML='<td></td><td></td><td></td><td></td>';
+        tr.children[0].textContent=t.name; tr.children[1].textContent=t.qualification||'-'; tr.children[2].textContent=t.regNo||'-';
+        const edit=document.createElement('button'); edit.className='btn btn-sm btn-outline'; edit.textContent='Edit'; edit.onclick=()=>receiptOpenTherapistModal(t.id);
+        const del=document.createElement('button'); del.className='btn btn-sm btn-danger'; del.textContent='Delete'; del.style.marginLeft='4px'; del.onclick=()=>receiptDeleteTherapist(t.id);
+        tr.children[3].append(edit,del); tbody.appendChild(tr);
+    });
+}
+function receiptDeleteTherapist(id) {
+    if(!confirm('Delete this physiotherapist? Existing receipts will keep their saved therapist details.')) return;
+    db.therapists=db.therapists.filter(t=>t.id!==id); saveDB(); receiptPopulateTherapists(); showToast('Physiotherapist deleted');
+}
+function receiptLoadTherapist(id) {
+    const t=(db.therapists||[]).find(x=>x.id===id); if(!t) return;
+    document.getElementById('r-doc-name').value=t.name||''; document.getElementById('r-doc-qual').value=t.qualification||''; document.getElementById('r-doc-reg').value=t.regNo||''; receiptUpdate();
+}
+function receiptLoadPatient(id) {
+    const p=getPatient(id); if(!p) return;
+    document.getElementById('r-pat-name').value=p.name||''; document.getElementById('r-age').value=p.age||''; document.getElementById('r-sex').value=p.gender==='F'?'Female':p.gender==='O'?'Other':'Male'; document.getElementById('r-mobile').value=p.mobile||''; document.getElementById('r-address').value=p.address||''; receiptUpdate();
+}
+function receiptNew() {
+    document.getElementById('r-therapist').value=''; document.getElementById('r-patient').value=''; document.getElementById('r-doc-name').value=''; document.getElementById('r-doc-qual').value=''; document.getElementById('r-doc-reg').value=''; document.getElementById('r-pat-name').value=''; document.getElementById('r-age').value=''; document.getElementById('r-sex').value='Male'; document.getElementById('r-mobile').value=''; document.getElementById('r-address').value=''; document.getElementById('r-date').value=new Date().toISOString().slice(0,10); document.getElementById('r-services').value=''; document.getElementById('r-amount').value='0'; document.getElementById('r-mode').value='Cash'; document.getElementById('r-trans-id').value=''; document.getElementById('r-custom').value=''; document.getElementById('r-bill-no').value=receiptGenerateBillNo(); receiptUpdate(); receiptUpdateServices();
+}
+function receiptGenerateBillNo() {
+    const d=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    let n=1, prefix='RCPT-'+d+'-';
+    const used=new Set((db.receipts||[]).map(r=>r.billNo));
+    while(used.has(prefix+String(n).padStart(3,'0'))) n++;
+    return prefix+String(n).padStart(3,'0');
+}
+function receiptNumberToWords(number) {
+    number=Math.floor(Math.abs(parseFloat(number)||0)); if(number===0) return 'Zero Only'; if(number>99999999) return 'Amount too large';
+    const u=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'], teens=['Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'], tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+    function h(n){ if(n===0)return ''; if(n<10)return u[n]; if(n<20)return teens[n-10]; if(n<100)return tens[Math.floor(n/10)]+(n%10?' '+u[n%10]:''); return u[Math.floor(n/100)]+' Hundred'+(n%100?' '+h(n%100):''); }
+    let parts=[]; const lakh=Math.floor(number/100000), restL=number%100000, thousand=Math.floor(restL/1000), rest=restL%1000;
+    if(lakh) parts.push(h(lakh)+' Lakh'); if(thousand) parts.push(h(thousand)+' Thousand'); if(rest) parts.push(h(rest)); return parts.join(' ')+' Only';
+}
+function receiptUpdate() {
+    const val=id=>document.getElementById(id)?.value||'';
+    document.getElementById('ro-doc-name').textContent=val('r-doc-name')||'Dr. Name'; document.getElementById('ro-doc-qual').textContent=val('r-doc-qual')||'Qualification'; document.getElementById('ro-doc-reg').textContent=val('r-doc-reg')||'Registration No.'; document.getElementById('ro-footer-doc').textContent='For '+(val('r-doc-name')||'Dr. Name');
+    const name=val('r-pat-name'); document.getElementById('ro-pat-name').textContent=name||'-'; document.getElementById('ro-footer-name').textContent=name||'Patient Name'; document.getElementById('ro-age-sex').textContent=(val('r-age')||'-')+'/ '+(val('r-sex')||'Male'); document.getElementById('ro-mobile').textContent=val('r-mobile')||'-'; document.getElementById('ro-address').textContent=val('r-address')||'-'; document.getElementById('ro-bill-no').textContent=val('r-bill-no')||'-'; document.getElementById('ro-date').textContent=val('r-date')?new Date(val('r-date')).toLocaleDateString('en-GB'):'-'; document.getElementById('ro-mode').textContent=val('r-mode')||'Cash'; const amount=parseFloat(val('r-amount'))||0; document.getElementById('ro-amount').textContent=amount; document.getElementById('ro-words').textContent=receiptNumberToWords(amount); document.getElementById('ro-custom').textContent=val('r-custom');
+}
+function receiptUpdateServices() {
+    const tbody=document.getElementById('ro-services'); tbody.innerHTML=''; const raw=document.getElementById('r-services').value.trim();
+    if(!raw){ const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=3; td.textContent='-'; td.style.textAlign='center'; td.style.color='#999'; tr.appendChild(td); tbody.appendChild(tr); return; }
+    raw.split('\n').slice(0,20).forEach(line=>{ if(!line.trim()) return; const p=line.split('|'); const tr=document.createElement('tr'); [p[0]?.trim()||'',p[1]?.trim()||'-',p[2]?.trim()||'0'].forEach((x,i)=>{const td=document.createElement('td');td.textContent=x;if(i===1)td.style.textAlign='center';if(i===2)td.style.textAlign='right';tr.appendChild(td)}); tbody.appendChild(tr); });
+}
+function receiptSave() {
+    const patientId=document.getElementById('r-patient').value, patientName=document.getElementById('r-pat-name').value.trim(), billNo=document.getElementById('r-bill-no').value.trim(), date=document.getElementById('r-date').value, amount=parseFloat(document.getElementById('r-amount').value)||0;
+    if(!patientName || !date || !amount) return showToast('Patient, date and amount are required','error');
+    if((db.receipts||[]).some(r=>r.billNo===billNo)) return showToast('Bill number already exists. Create a new receipt.','error');
+    const therapistId=document.getElementById('r-therapist').value;
+    const receipt={id:generateId(),billNo,date,therapistId,therapistName:document.getElementById('r-doc-name').value.trim(),therapistQual:document.getElementById('r-doc-qual').value.trim(),therapistRegNo:document.getElementById('r-doc-reg').value.trim(),patientId,patientName,patientAge:document.getElementById('r-age').value,patientSex:document.getElementById('r-sex').value,patientMobile:document.getElementById('r-mobile').value.trim(),patientAddress:document.getElementById('r-address').value.trim(),services:document.getElementById('r-services').value.trim(),amount,paymentMode:document.getElementById('r-mode').value,transactionId:document.getElementById('r-trans-id').value.trim(),customText:document.getElementById('r-custom').value.trim(),createdAt:new Date().toISOString()};
+    db.receipts.push(receipt);
+    if(patientId){ const p=getPatient(patientId); if(p){ p.mobile=receipt.patientMobile; p.address=receipt.patientAddress; p.age=receipt.patientAge||p.age; p.gender=receipt.patientSex==='Female'?'F':receipt.patientSex==='Other'?'O':'M'; } }
+    const serial=billNo;
+    if(!db.income.some(i=>i.receiptNo===billNo || i.serialNo===billNo)) db.income.push({id:generateId(),patientId:patientId,date,amount,units:receipt.services?receipt.services.split('\n').filter(Boolean).length:1,receiptNo:billNo,serialNo:serial,status:'Completed',mode:receipt.paymentMode,note:receipt.customText||receipt.services,type:'Direct',sessionIds:[]});
+    saveDB(); receiptPopulatePatients(); receiptRenderHistory(); showToast('Receipt saved: '+billNo); receiptNew();
+}
+function receiptLoad(id) {
+    const r=(db.receipts||[]).find(x=>x.id===id); if(!r) return;
+    switchView('receipt');
+    document.getElementById('r-bill-no').value=r.billNo||''; document.getElementById('r-date').value=r.date||''; document.getElementById('r-doc-name').value=r.therapistName||''; document.getElementById('r-doc-qual').value=r.therapistQual||''; document.getElementById('r-doc-reg').value=r.therapistRegNo||''; document.getElementById('r-pat-name').value=r.patientName||''; document.getElementById('r-age').value=r.patientAge||''; document.getElementById('r-sex').value=r.patientSex||'Male'; document.getElementById('r-mobile').value=r.patientMobile||''; document.getElementById('r-address').value=r.patientAddress||''; document.getElementById('r-services').value=r.services||''; document.getElementById('r-amount').value=r.amount||0; document.getElementById('r-mode').value=r.paymentMode||'Cash'; document.getElementById('r-trans-id').value=r.transactionId||''; document.getElementById('r-custom').value=r.customText||''; document.getElementById('r-therapist').value=r.therapistId||''; document.getElementById('r-patient').value=r.patientId||''; receiptUpdate(); receiptUpdateServices();
+}
+function receiptDelete(id) { if(!confirm('Delete this receipt?')) return; db.receipts=db.receipts.filter(r=>r.id!==id); saveDB(); receiptRenderHistory(); showToast('Receipt deleted'); }
+function receiptRenderHistory() {
+    const tbody=document.querySelector('#receipt-history-table tbody'); if(!tbody) return; const q=(document.getElementById('receipt-history-search')?.value||'').toLowerCase(); const m=document.getElementById('receipt-history-month')?.value||'All';
+    const rows=(db.receipts||[]).filter(r=>{ const text=[r.billNo,r.patientName,r.therapistName,r.transactionId].join(' ').toLowerCase(); if(q&&!text.includes(q)) return false; if(m!=='All' && new Date(r.date).getMonth()!==parseInt(m)) return false; return true; }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    tbody.innerHTML=''; if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:#777">No receipts found</td></tr>';return;}
+    rows.forEach(r=>{ const tr=document.createElement('tr'); [r.billNo,r.date,r.patientName||'-',r.therapistName||'-','₹ '+Number(r.amount||0).toLocaleString('en-IN'),r.paymentMode||'-',r.transactionId||'-'].forEach(x=>{const td=document.createElement('td');td.textContent=x;tr.appendChild(td)}); const td=document.createElement('td'); const load=document.createElement('button');load.className='btn btn-sm btn-outline';load.textContent='Load';load.onclick=()=>receiptLoad(r.id); const del=document.createElement('button');del.className='btn btn-sm btn-danger';del.textContent='Delete';del.style.marginLeft='4px';del.onclick=()=>receiptDelete(r.id);td.append(load,del);tr.appendChild(td);tbody.appendChild(tr); });
+}
+function receiptExportCSV() {
+    const rows=db.receipts||[]; if(!rows.length) return showToast('No receipts to export','error');
+    const esc=x=>'"'+String(x??'').replace(/"/g,'""')+'"'; let csv='"Bill No","Date","Patient","Physiotherapist","Amount","Mode","Transaction ID","Custom Text"\n'; rows.forEach(r=>csv+= [r.billNo,r.date,r.patientName,r.therapistName,r.amount,r.paymentMode,r.transactionId,r.customText].map(esc).join(',')+'\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='receipts_'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+function receiptPrint(){ switchView('receipt'); setTimeout(()=>window.print(),50); }
+
+
+window.addEventListener('DOMContentLoaded', function(){ setTimeout(receiptInit, 0); });
+</script>
+
+</body>
+</html>
