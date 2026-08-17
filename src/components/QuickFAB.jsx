@@ -110,8 +110,8 @@ export default function QuickFAB() {
         />
       )}
 
-      {/* FAB & Menu — raised higher on mobile to clear bottom nav */}
-      <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-3">
+      {/* FAB & Menu — pointer-events-none on wrapper to never block background taps */}
+      <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
         
         {/* Speed Dial Actions */}
         <div className={`flex flex-col items-end gap-2.5 transition-all duration-200 ${
@@ -127,7 +127,7 @@ export default function QuickFAB() {
             </span>
             <button
               onClick={handleOpenPatientModal}
-              className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition"
+              className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition pointer-events-auto"
               title="Add New Patient"
             >
               <UserPlus className="w-5 h-5" />
@@ -141,7 +141,7 @@ export default function QuickFAB() {
             </span>
             <button
               onClick={handleAddReceipt}
-              className="w-11 h-11 rounded-full bg-accent text-foreground flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition"
+              className="w-11 h-11 rounded-full bg-accent text-foreground flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition pointer-events-auto"
               title="Create New Receipt"
             >
               <Receipt className="w-5 h-5" />
@@ -150,10 +150,10 @@ export default function QuickFAB() {
 
         </div>
 
-        {/* Main FAB — flat teal, no gradient */}
+        {/* Main FAB — flat teal, pointer-events-auto */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg transition-all duration-200 focus:outline-none ${
+          className={`w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg transition-all duration-200 focus:outline-none pointer-events-auto ${
             isOpen 
               ? 'bg-foreground rotate-45' 
               : 'bg-primary hover:opacity-90 active:scale-95'
