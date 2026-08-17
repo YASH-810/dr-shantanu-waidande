@@ -9,7 +9,6 @@ import {
   UserPlus, 
   Receipt, 
   CheckCircle2, 
-  Sparkles,
   ArrowRight
 } from 'lucide-react';
 
@@ -75,7 +74,6 @@ export default function QuickFAB() {
     const updatedPatients = [newPatient, ...(db.patients || [])];
     saveLocalDB({ ...db, patients: updatedPatients });
 
-    // Notify other components/pages about DB update
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('local-db-updated'));
     }
@@ -98,8 +96,8 @@ export default function QuickFAB() {
     <>
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[70] px-4 py-3 bg-slate-900/95 text-emerald-400 border border-slate-700 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-5 right-5 z-[70] px-4 py-3 bg-foreground text-primary-light border border-foreground/80 rounded-lg shadow-lg text-xs font-semibold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-primary-light" />
           {toast}
         </div>
       )}
@@ -107,43 +105,43 @@ export default function QuickFAB() {
       {/* Speed Dial Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-foreground/30 transition-opacity duration-200"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Floating Action Button (FAB) & Menu */}
-      <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-3">
+      {/* FAB & Menu — raised higher on mobile to clear bottom nav */}
+      <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-3">
         
-        {/* Speed Dial Menu Actions */}
-        <div className={`flex flex-col items-end gap-2.5 transition-all duration-300 ${
+        {/* Speed Dial Actions */}
+        <div className={`flex flex-col items-end gap-2.5 transition-all duration-200 ${
           isOpen 
-            ? 'opacity-100 translate-y-0 pointer-events-auto scale-100' 
-            : 'opacity-0 translate-y-6 pointer-events-none scale-90'
+            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+            : 'opacity-0 translate-y-4 pointer-events-none'
         }`}>
           
-          {/* Action 1: Add Patient */}
-          <div className="flex items-center gap-2.5 group">
-            <span className="bg-slate-900/90 text-white text-xs font-bold py-1.5 px-3 rounded-xl shadow-lg whitespace-nowrap transition-transform duration-200 group-hover:scale-105 border border-slate-700/50">
+          {/* Action: Add Patient */}
+          <div className="flex items-center gap-2.5">
+            <span className="bg-foreground text-white text-xs font-medium py-1.5 px-3 rounded-md shadow-sm whitespace-nowrap">
               Add Patient
             </span>
             <button
               onClick={handleOpenPatientModal}
-              className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition"
               title="Add New Patient"
             >
               <UserPlus className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Action 2: Add Receipt */}
-          <div className="flex items-center gap-2.5 group">
-            <span className="bg-slate-900/90 text-white text-xs font-bold py-1.5 px-3 rounded-xl shadow-lg whitespace-nowrap transition-transform duration-200 group-hover:scale-105 border border-slate-700/50">
+          {/* Action: Add Receipt */}
+          <div className="flex items-center gap-2.5">
+            <span className="bg-foreground text-white text-xs font-medium py-1.5 px-3 rounded-md shadow-sm whitespace-nowrap">
               Add Receipt
             </span>
             <button
               onClick={handleAddReceipt}
-              className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              className="w-11 h-11 rounded-full bg-accent text-foreground flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition"
               title="Create New Receipt"
             >
               <Receipt className="w-5 h-5" />
@@ -152,39 +150,39 @@ export default function QuickFAB() {
 
         </div>
 
-        {/* Main Trigger FAB Button */}
+        {/* Main FAB — flat teal, no gradient */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl transition-all duration-300 border border-white/30 focus:outline-none ${
+          className={`w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg transition-all duration-200 focus:outline-none ${
             isOpen 
-              ? 'bg-slate-800 rotate-45 shadow-slate-900/40 scale-105' 
-              : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 shadow-blue-600/40 hover:scale-110 active:scale-95'
+              ? 'bg-foreground rotate-45' 
+              : 'bg-primary hover:opacity-90 active:scale-95'
           }`}
           aria-label="Quick Actions Menu"
         >
-          <Plus className="w-7 h-7 stroke-[2.5]" />
+          <Plus className="w-6 h-6 stroke-[2.5]" />
         </button>
 
       </div>
 
       {/* Quick Add Patient Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-slate-100">
+        <div className="fixed inset-0 z-[60] bg-foreground/50 flex items-center justify-center p-4">
+          <div className="bg-surface w-full max-w-lg rounded-lg shadow-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-border">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Register New Patient</h3>
-                  <p className="text-[11px] text-slate-500">Quick patient entry from anywhere</p>
+                  <h3 className="text-base font-semibold text-foreground">Register New Patient</h3>
+                  <p className="text-[11px] text-foreground/50">Quick patient entry from anywhere</p>
                 </div>
               </div>
               <button 
                 onClick={() => setModalOpen(false)} 
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+                className="p-1 rounded-md text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -193,23 +191,23 @@ export default function QuickFAB() {
             <form onSubmit={(e) => handleSavePatient(e, false)} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Case No</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Case No</label>
                   <input
                     type="text"
                     value={formData.caseNo}
                     onChange={(e) => setFormData({ ...formData, caseNo: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md font-mono text-foreground"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Patient Name *</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Patient Name *</label>
                   <input
                     type="text"
                     placeholder="Full Name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
+                    className="w-full p-2.5 bg-background border border-border rounded-md font-medium text-foreground focus:outline-none focus:border-primary"
                     required
                   />
                 </div>
@@ -217,21 +215,21 @@ export default function QuickFAB() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Age</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Age</label>
                   <input
                     type="number"
                     placeholder="45"
                     value={formData.age}
                     onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Gender</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Gender</label>
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-medium"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   >
                     <option value="M">Male</option>
                     <option value="F">Female</option>
@@ -239,11 +237,11 @@ export default function QuickFAB() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Status</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-medium"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   >
                     <option value="Active">Active</option>
                     <option value="Completed">Completed</option>
@@ -252,59 +250,59 @@ export default function QuickFAB() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Condition / Diagnosis *</label>
+                <label className="block font-medium text-foreground/70 mb-1">Condition / Diagnosis *</label>
                 <input
                   type="text"
                   placeholder="e.g. Lumbar Spondylosis, Frozen Shoulder"
                   value={formData.condition}
                   onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-medium focus:outline-none focus:border-emerald-500"
+                  className="w-full p-2.5 bg-background border border-border rounded-md text-foreground font-medium focus:outline-none focus:border-primary"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Medical History</label>
+                <label className="block font-medium text-foreground/70 mb-1">Medical History</label>
                 <textarea
                   rows="2"
                   placeholder="Brief medical notes or clinical history..."
                   value={formData.history}
                   onChange={(e) => setFormData({ ...formData, history: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                  className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Mobile Number</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Mobile Number</label>
                   <input
                     type="text"
                     placeholder="+91 98230 11223"
                     value={formData.mobile}
                     onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Referred By</label>
+                  <label className="block font-medium text-foreground/70 mb-1">Referred By</label>
                   <input
                     type="text"
                     placeholder="Doctor or Direct"
                     value={formData.referredBy}
                     onChange={(e) => setFormData({ ...formData, referredBy: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Address</label>
+                <label className="block font-medium text-foreground/70 mb-1">Address</label>
                 <input
                   type="text"
                   placeholder="City / Area address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                  className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                 />
               </div>
 
@@ -312,20 +310,20 @@ export default function QuickFAB() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="w-full sm:w-1/3 py-2.5 bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700 rounded-xl transition"
+                  className="w-full sm:w-1/3 py-2.5 bg-muted hover:bg-muted/80 font-medium text-foreground/70 rounded-md transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-1/3 py-2.5 bg-emerald-600 hover:bg-emerald-700 font-semibold text-white rounded-xl shadow-xs transition"
+                  className="w-full sm:w-1/3 py-2.5 bg-primary hover:opacity-90 font-medium text-white rounded-md transition"
                 >
                   Save Patient
                 </button>
                 <button
                   type="button"
                   onClick={(e) => handleSavePatient(e, true)}
-                  className="w-full sm:w-1/3 py-2.5 bg-blue-600 hover:bg-blue-700 font-semibold text-white rounded-xl shadow-xs transition flex items-center justify-center gap-1"
+                  className="w-full sm:w-1/3 py-2.5 bg-accent hover:opacity-90 font-medium text-foreground rounded-md transition flex items-center justify-center gap-1"
                 >
                   Save & Receipt <ArrowRight className="w-3.5 h-3.5" />
                 </button>

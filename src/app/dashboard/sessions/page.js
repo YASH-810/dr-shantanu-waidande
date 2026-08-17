@@ -11,7 +11,7 @@ export default function SessionsPage() {
   }, [router]);
 
   return (
-    <div className="p-12 text-center text-slate-500 text-xs font-semibold space-y-2">
+    <div className="p-12 text-center text-foreground/50 text-xs font-medium space-y-2">
       <p>Redirecting to Patient Directory & Rehabilitation Progression Logs...</p>
     </div>
   );

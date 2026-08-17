@@ -53,29 +53,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden">
-      {/* Dynamic Background Glows */}
-      <div className="absolute top-1/4 -left-20 w-80 h-80 bg-blue-600/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 -right-20 w-80 h-80 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center px-4 py-8">
 
       {/* Main Container */}
-      <div className="w-full max-w-md bg-slate-800/80 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-6 sm:p-8 shadow-2xl z-10">
+      <div className="w-full max-w-md bg-surface border border-border rounded-lg p-6 sm:p-8 shadow-sm">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/20 mb-4">
-            <Stethoscope className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-primary text-white mb-4">
+            <Stethoscope className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground font-serif">
             PhysioClinic Portal
           </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1">
-            Doctor Portal — Secure OAuth & Route Protected
+          <p className="text-foreground/50 text-xs sm:text-sm mt-1.5">
+            Doctor Portal — Secure Login
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs text-center">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-xs text-center">
             {error}
           </div>
         )}
@@ -84,7 +81,7 @@ export default function LoginPage() {
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full py-3.5 px-4 bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-2xl flex items-center justify-center gap-3 transition-all duration-200 shadow-md active:scale-95 text-sm"
+          className="w-full py-3.5 px-4 bg-white hover:bg-muted/50 text-foreground font-medium rounded-md flex items-center justify-center gap-3 transition border border-border active:scale-[0.98] text-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -104,13 +101,13 @@ export default function LoginPage() {
               d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.24 2.7 1.26 6.58l4.06 3.15c.94-2.83 3.57-4.98 6.68-4.98z"
             />
           </svg>
-          Continue with Google OAuth
+          Continue with Google
         </button>
 
         {/* Divider */}
         <div className="relative my-6 flex items-center justify-center">
-          <div className="border-t border-slate-700 w-full" />
-          <span className="bg-slate-800 px-3 text-xs text-slate-500 uppercase tracking-wider font-mono absolute">
+          <div className="border-t border-border w-full" />
+          <span className="bg-surface px-3 text-xs text-foreground/40 uppercase tracking-wider font-mono absolute">
             or email
           </span>
         </div>
@@ -119,44 +116,44 @@ export default function LoginPage() {
         <form onSubmit={handleEmailAuth} className="space-y-4">
           {isRegister && (
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+              <label className="block text-xs font-medium text-foreground/60 mb-1">Full Name</label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-foreground/30 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   placeholder="Dr. Shantanu Waidande"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-md text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Doctor Email</label>
+            <label className="block text-xs font-medium text-foreground/60 mb-1">Doctor Email</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-foreground/30 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 placeholder="doctor@physioclinic.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-md text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+            <label className="block text-xs font-medium text-foreground/60 mb-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-foreground/30 absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-md text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -164,7 +161,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-2xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-sm mt-2 active:scale-95"
+            className="w-full py-3.5 bg-primary hover:opacity-90 text-white font-medium rounded-md transition flex items-center justify-center gap-2 text-sm mt-2 active:scale-[0.98]"
           >
             {loading ? 'Authenticating...' : isRegister ? 'Create Account' : 'Sign In'}
             <ArrowRight className="w-4 h-4" />
@@ -175,26 +172,26 @@ export default function LoginPage() {
         <div className="mt-4 text-center">
           <button
             onClick={() => setIsRegister(!isRegister)}
-            className="text-xs text-slate-400 hover:text-blue-400 transition"
+            className="text-xs text-foreground/40 hover:text-primary transition"
           >
             {isRegister ? 'Already registered? Sign In' : 'First time doctor? Register here'}
           </button>
         </div>
 
         {/* Demo Fast Track */}
-        <div className="mt-6 pt-5 border-t border-slate-700/60 text-center">
+        <div className="mt-6 pt-5 border-t border-border text-center">
           <button
             onClick={handleDemoAccess}
-            className="w-full py-3 px-4 bg-slate-700/40 hover:bg-slate-700/70 border border-slate-600/50 rounded-2xl text-xs font-medium text-slate-300 flex items-center justify-center gap-2 transition"
+            className="w-full py-3 px-4 bg-primary/8 hover:bg-primary/15 border border-primary/15 rounded-md text-xs font-medium text-foreground/70 flex items-center justify-center gap-2 transition"
           >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-primary" />
             Quick Demo Login (Dr. Shantanu Waidande)
           </button>
         </div>
 
       </div>
 
-      <p className="text-slate-500 text-xs mt-6 text-center">
+      <p className="text-foreground/30 text-xs mt-6 text-center">
         PhysioClinic PWA &copy; {new Date().getFullYear()} — Doctor Portal
       </p>
     </div>

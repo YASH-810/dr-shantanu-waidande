@@ -9,9 +9,6 @@ import {
   ArrowLeft, 
   CheckCircle2, 
   FileText, 
-  Stethoscope, 
-  User, 
-  Sparkles,
   Plus,
   Trash2
 } from 'lucide-react';
@@ -25,7 +22,7 @@ export default function CreateReceiptPage() {
   const [patients, setPatients] = useState([]);
   const [toast, setToast] = useState(null);
 
-  // Separate inputs for Service Description & Amount (Units dropped per request)
+  // Service Description & Amount items
   const [serviceItems, setServiceItems] = useState([
     { service: "Physiotherapy Treatment & Rehabilitation", amount: "500" }
   ]);
@@ -108,305 +105,285 @@ export default function CreateReceiptPage() {
         address: p.address || ""
       }));
     } else {
-      setForm(prev => ({ ...prev, patientId: "" }));
+      setForm(prev => ({
+        ...prev,
+        patientId: "",
+        patName: "",
+        age: "",
+        sex: "Male",
+        mobile: "",
+        address: ""
+      }));
     }
   };
 
-  // Service item array handlers
-  const handleAddServiceItem = () => {
-    setServiceItems(prev => [...prev, { service: "", amount: "" }]);
+  const handleServiceChange = (index, field, value) => {
+    const updated = [...serviceItems];
+    updated[index][field] = value;
+    setServiceItems(updated);
   };
 
-  const handleRemoveServiceItem = (index) => {
-    setServiceItems(prev => prev.filter((_, i) => i !== index));
+  const handleAddService = () => {
+    setServiceItems([...serviceItems, { service: "", amount: "0" }]);
   };
 
-  const handleUpdateServiceItem = (index, field, value) => {
-    setServiceItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  const handleRemoveService = (index) => {
+    if (serviceItems.length === 1) return;
+    setServiceItems(serviceItems.filter((_, i) => i !== index));
   };
 
-  // Total Amount Calculation
   const totalAmountNum = serviceItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
   const wordsAmount = numberToWords(totalAmountNum);
 
   const handleSaveReceipt = () => {
-    if (!form.patName || totalAmountNum <= 0) {
-      triggerToast('Patient name and valid service amount are required');
+    if (!form.patName) {
+      triggerToast('Please enter patient name');
       return;
     }
-
-    // Format services as string for backwards-compatible DB storage
-    const servicesStr = serviceItems
-      .filter(item => item.service)
-      .map(item => `${item.service} | ${item.amount}`)
-      .join('\n');
 
     const db = getLocalDB();
     const newReceipt = {
       id: generateId('r'),
       billNo: form.billNo,
       date: form.date,
+      patientId: form.patientId || null,
+      patientName: form.patName,
+      age: form.age,
+      sex: form.sex,
+      mobile: form.mobile,
       therapistName: form.docName,
       therapistQual: form.docQual,
-      therapistRegNo: form.docReg,
-      patientId: form.patientId,
-      patientName: form.patName,
-      patientAge: form.age,
-      patientSex: form.sex,
-      patientMobile: form.mobile,
-      patientAddress: form.address,
-      services: servicesStr,
+      therapistReg: form.docReg,
+      services: serviceItems,
       amount: totalAmountNum,
       paymentMode: form.mode,
       transactionId: form.transId,
-      customText: form.customText,
+      note: form.customText,
       createdAt: new Date().toISOString()
     };
 
-    const updatedReceipts = [newReceipt, ...(db.receipts || [])];
-    
-    // Save to financial income records
-    const newIncome = {
-      id: generateId('i'),
-      patientId: form.patientId,
-      date: form.date,
-      receiptNo: form.billNo,
-      serialNo: form.billNo,
-      amount: totalAmountNum,
-      mode: form.mode,
-      status: 'Completed',
-      note: form.customText || 'Receipt payment',
-      type: 'Direct',
-      createdAt: new Date().toISOString()
-    };
-
-    const updatedIncome = [newIncome, ...(db.income || [])];
-
-    saveLocalDB({ ...db, receipts: updatedReceipts, income: updatedIncome });
-    triggerToast('Receipt and income record saved successfully!');
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('local-db-updated'));
-    }
+    const updated = [newReceipt, ...(db.receipts || [])];
+    saveLocalDB({ ...db, receipts: updated });
+    triggerToast('Receipt saved to records');
   };
 
   const handlePrint = () => {
+    handleSaveReceipt();
     window.print();
   };
 
   return (
     <div className="space-y-6">
       
+      {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-4 right-4 z-50 px-4 py-3 bg-slate-900 text-emerald-400 border border-slate-700 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 print:hidden">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-3 bg-foreground text-primary-light border border-foreground/80 rounded-lg shadow-md text-xs font-medium flex items-center gap-2 print:hidden">
+          <CheckCircle2 className="w-4 h-4" />
           {toast}
         </div>
       )}
 
-      {/* Header bar */}
+      {/* Top Header & Actions */}
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-2 bg-slate-200 hover:bg-slate-300 rounded-xl text-slate-700 transition"
+            className="p-2 bg-surface hover:bg-foreground/5 border border-border text-foreground/70 rounded-md transition"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-amber-500" /> Printable Receipt Builder
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2 font-serif">
+              <FileText className="w-5 h-5 text-primary" /> Create Patient Receipt
             </h1>
-            <p className="text-xs text-slate-500">Create itemized A5 clinic receipts with automated words conversion</p>
+            <p className="text-xs text-foreground/50">Printable A5 layout for clinical documentation</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleSaveReceipt}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition"
+            className="px-4 py-2 bg-surface hover:bg-foreground/5 border border-border text-foreground text-xs font-medium rounded-md flex items-center gap-1.5 transition"
           >
-            <Save className="w-4 h-4" /> Save Receipt
+            <Save className="w-4 h-4 text-primary" /> Save Receipt
           </button>
 
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
+            className="px-4 py-2 bg-primary hover:opacity-90 text-white text-xs font-medium rounded-md flex items-center gap-1.5 shadow-sm transition active:scale-[0.98]"
           >
             <Printer className="w-4 h-4" /> Print A5 Receipt
           </button>
         </div>
       </div>
 
-      {/* Workspace Grid */}
+      {/* Main Grid: Form Inputs (Left) vs Live A5 Paper (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left: Form Controls (Hidden during print) */}
-        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4 text-xs print:hidden">
+        {/* Left: Input Form Controls */}
+        <div className="lg:col-span-5 bg-surface p-5 rounded-lg border border-border space-y-4 text-xs print:hidden">
           
-          <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs border-b pb-2">
-            1. Receipt Details
-          </h2>
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <h2 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
+              Receipt Parameters
+            </h2>
+            <span className="text-[11px] font-mono text-primary font-medium">{form.billNo}</span>
+          </div>
 
+          {/* Quick Select Registered Patient */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Select Patient (Auto-fill)</label>
+            <label className="block font-medium text-foreground/70 mb-1">Select Registered Patient</label>
             <select
               value={form.patientId}
               onChange={handlePatientSelect}
-              className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
+              className="w-full p-2 bg-background border border-border rounded-md text-foreground font-medium focus:outline-none focus:border-primary"
             >
-              <option value="">-- Manual Entry / Select Patient --</option>
+              <option value="">-- Manual Entry / Pick from Register --</option>
               {patients.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} ({p.caseNo})</option>
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.caseNo || 'No Case'}) - {p.condition}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Bill / Receipt No</label>
+              <label className="block font-medium text-foreground/70 mb-1">Receipt / Bill No</label>
               <input
                 type="text"
                 value={form.billNo}
                 onChange={(e) => setForm({ ...form, billNo: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-800"
+                className="w-full p-2 bg-background border border-border rounded-md font-mono text-foreground"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Date</label>
+              <label className="block font-medium text-foreground/70 mb-1">Billing Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                className="w-full p-2 bg-background border border-border rounded-md text-foreground"
               />
             </div>
           </div>
 
-          <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs border-b pb-2 pt-2">
-            2. Doctor & Patient Information
-          </h2>
-
-          <div className="grid grid-cols-2 gap-3">
+          {/* Patient Info Fields */}
+          <div className="space-y-3 pt-2 border-t border-border">
+            <p className="font-medium text-foreground/50 uppercase tracking-wider text-[10px]">Patient Details</p>
+            
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Doctor Name</label>
-              <input
-                type="text"
-                value={form.docName}
-                onChange={(e) => setForm({ ...form, docName: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">Qualifications</label>
-              <input
-                type="text"
-                value={form.docQual}
-                onChange={(e) => setForm({ ...form, docQual: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">Patient Name</label>
+              <label className="block font-medium text-foreground/70 mb-1">Patient Name *</label>
               <input
                 type="text"
                 value={form.patName}
                 onChange={(e) => setForm({ ...form, patName: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                placeholder="Full Patient Name"
+                className="w-full p-2 bg-background border border-border rounded-md font-medium text-foreground"
+                required
               />
             </div>
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">Age / Gender</label>
-              <div className="flex gap-2">
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block font-medium text-foreground/70 mb-1">Age</label>
                 <input
                   type="text"
-                  placeholder="Age"
                   value={form.age}
                   onChange={(e) => setForm({ ...form, age: e.target.value })}
-                  className="w-1/2 p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                  placeholder="34"
+                  className="w-full p-2 bg-background border border-border rounded-md text-foreground"
                 />
+              </div>
+              <div>
+                <label className="block font-medium text-foreground/70 mb-1">Gender</label>
                 <select
                   value={form.sex}
                   onChange={(e) => setForm({ ...form, sex: e.target.value })}
-                  className="w-1/2 p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                  className="w-full p-2 bg-background border border-border rounded-md text-foreground"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
+              <div>
+                <label className="block font-medium text-foreground/70 mb-1">Mobile</label>
+                <input
+                  type="text"
+                  value={form.mobile}
+                  onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                  placeholder="98230..."
+                  className="w-full p-2 bg-background border border-border rounded-md text-foreground"
+                />
+              </div>
             </div>
           </div>
 
-          <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs border-b pb-2 pt-2">
-            3. Treatment Services & Payment
-          </h2>
-
-          {/* Separate Service & Amount Inputs (Units Dropped) */}
-          <div className="space-y-2">
+          {/* Service Items Section */}
+          <div className="space-y-3 pt-2 border-t border-border">
             <div className="flex items-center justify-between">
-              <label className="block font-semibold text-slate-700">Treatment Particulars & Amounts</label>
+              <p className="font-medium text-foreground/50 uppercase tracking-wider text-[10px]">Service Items</p>
               <button
                 type="button"
-                onClick={handleAddServiceItem}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                onClick={handleAddService}
+                className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1"
               >
-                <Plus className="w-3.5 h-3.5" /> Add Service
+                <Plus className="w-3 h-3" /> Add Service Row
               </button>
             </div>
 
-            {serviceItems.map((item, idx) => (
-              <div key={idx} className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  placeholder="Service / Treatment Description"
-                  value={item.service}
-                  onChange={(e) => handleUpdateServiceItem(idx, 'service', e.target.value)}
-                  className="flex-1 p-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 text-xs"
-                />
-                <div className="relative w-28 shrink-0">
-                  <span className="absolute left-2.5 top-2 text-slate-400 font-bold">₹</span>
+            <div className="space-y-2">
+              {serviceItems.map((item, index) => (
+                <div key={index} className="flex items-center gap-2">
                   <input
-                    type="number"
-                    placeholder="Amount"
-                    value={item.amount}
-                    onChange={(e) => handleUpdateServiceItem(idx, 'amount', e.target.value)}
-                    className="w-full pl-6 pr-2 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-800 text-xs"
+                    type="text"
+                    placeholder="Treatment Description"
+                    value={item.service}
+                    onChange={(e) => handleServiceChange(index, 'service', e.target.value)}
+                    className="flex-1 p-2 bg-background border border-border rounded-md text-xs text-foreground font-medium"
                   />
+                  <div className="w-24 relative">
+                    <span className="absolute left-2 top-2 text-foreground/40 font-mono">₹</span>
+                    <input
+                      type="number"
+                      placeholder="500"
+                      value={item.amount}
+                      onChange={(e) => handleServiceChange(index, 'amount', e.target.value)}
+                      className="w-full pl-5 pr-2 py-2 bg-background border border-border rounded-md text-xs font-semibold text-foreground"
+                    />
+                  </div>
+                  {serviceItems.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveService(index)}
+                      className="p-1.5 text-foreground/30 hover:text-red-500 rounded transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
-                {serviceItems.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveServiceItem(idx)}
-                    className="text-slate-400 hover:text-rose-600 p-1"
-                    title="Remove item"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          {/* Payment & Mode */}
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Calculated Total (₹)</label>
+              <label className="block font-medium text-foreground/70 mb-1">Total Bill Amount</label>
               <input
-                type="number"
-                value={totalAmountNum}
+                type="text"
+                value={`₹ ${totalAmountNum}`}
                 readOnly
-                className="w-full p-2 bg-emerald-50 border border-emerald-300 rounded-xl font-black text-emerald-800 text-base"
+                className="w-full p-2 bg-primary/8 border border-primary/20 rounded-md font-semibold text-primary text-base"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Payment Mode</label>
+              <label className="block font-medium text-foreground/70 mb-1">Payment Mode</label>
               <select
                 value={form.mode}
                 onChange={(e) => setForm({ ...form, mode: e.target.value })}
-                className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold"
+                className="w-full p-2 bg-background border border-border rounded-md text-foreground font-medium"
               >
                 <option value="Online">Online / GPay</option>
                 <option value="Cash">Cash</option>
@@ -416,67 +393,67 @@ export default function CreateReceiptPage() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Transaction Ref / Note</label>
+            <label className="block font-medium text-foreground/70 mb-1">Transaction Ref / Note</label>
             <input
               type="text"
               value={form.transId}
               onChange={(e) => setForm({ ...form, transId: e.target.value })}
-              className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-800"
+              className="w-full p-2 bg-background border border-border rounded-md font-mono text-foreground"
             />
           </div>
 
         </div>
 
-        {/* Right: Live A5 Printable Paper Preview */}
-        <div className="lg:col-span-7 flex justify-center bg-slate-800 p-4 sm:p-8 rounded-2xl shadow-inner print:p-0 print:bg-white print:shadow-none">
+        {/* Right: Live A5 Printable Paper Preview — Responsive Scroll Container */}
+        <div className="lg:col-span-7 overflow-x-auto w-full flex justify-center bg-muted/40 p-3 sm:p-6 rounded-lg border border-border print:p-0 print:bg-white print:border-none print:shadow-none">
           
-          <div className="w-[210mm] min-h-[148mm] bg-white p-8 text-black shadow-2xl rounded-sm font-sans flex flex-col justify-between border border-slate-300 print:shadow-none print:border-none print:w-full print:h-auto">
+          <div className="w-full max-w-[210mm] min-h-[148mm] bg-white p-6 sm:p-8 text-black shadow-sm rounded-sm font-sans flex flex-col justify-between border border-border print:shadow-none print:border-none print:w-full print:h-auto">
             
             {/* Receipt Header */}
             <div>
               <div className="flex justify-between items-start border-b-2 border-black pb-4">
                 <div>
-                  <h2 className="text-xl font-black uppercase tracking-tight text-blue-900">{form.docName || 'Dr. Name'}</h2>
-                  <p className="text-xs font-bold text-slate-700">{form.docQual || 'Qualification'}</p>
-                  <p className="text-[10px] text-slate-500 italic">Reg. No: {form.docReg || 'PT-XXXX'}</p>
+                  <h2 className="text-xl font-bold uppercase tracking-tight text-neutral-900 font-serif">{form.docName || 'Dr. Name'}</h2>
+                  <p className="text-xs font-medium text-neutral-700">{form.docQual || 'Qualification'}</p>
+                  <p className="text-[10px] text-neutral-500 italic">Reg. No: {form.docReg || 'PT-XXXX'}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xl font-black tracking-widest text-slate-900 uppercase">RECEIPT</span>
-                  <p className="text-xs font-mono font-bold mt-1 text-blue-950">No: {form.billNo}</p>
-                  <p className="text-xs text-slate-600 font-mono">Date: {form.date}</p>
+                  <span className="text-lg font-bold tracking-widest text-neutral-900 uppercase">RECEIPT</span>
+                  <p className="text-xs font-mono font-medium mt-1 text-neutral-800">No: {form.billNo}</p>
+                  <p className="text-xs text-neutral-600 font-mono">Date: {form.date}</p>
                 </div>
               </div>
 
               {/* Patient Details Row */}
-              <div className="grid grid-cols-2 gap-4 my-4 py-2 bg-slate-50/80 px-3 border border-slate-200 text-xs">
+              <div className="grid grid-cols-2 gap-4 my-4 py-2 bg-neutral-50 px-3 border border-neutral-200 text-xs">
                 <div>
-                  <p><span className="font-bold text-slate-600">Patient Name:</span> <span className="font-bold text-slate-900 uppercase">{form.patName || 'Patient Name'}</span></p>
-                  <p><span className="font-bold text-slate-600">Mobile:</span> {form.mobile || '-'}</p>
+                  <p><span className="font-semibold text-neutral-600">Patient Name:</span> <span className="font-bold text-neutral-900 uppercase">{form.patName || 'Patient Name'}</span></p>
+                  <p><span className="font-semibold text-neutral-600">Mobile:</span> {form.mobile || '-'}</p>
                 </div>
                 <div className="text-right">
-                  <p><span className="font-bold text-slate-600">Age / Sex:</span> {form.age || '-'} / {form.sex}</p>
-                  <p><span className="font-bold text-slate-600">Mode:</span> <span className="font-semibold">{form.mode}</span></p>
+                  <p><span className="font-semibold text-neutral-600">Age / Sex:</span> {form.age || '-'} / {form.sex}</p>
+                  <p><span className="font-semibold text-neutral-600">Mode:</span> <span className="font-medium">{form.mode}</span></p>
                 </div>
               </div>
 
-              {/* Services Itemized Table (Dropped Unit column) */}
+              {/* Services Itemized Table */}
               <table className="w-full text-xs border-collapse my-4">
                 <thead>
-                  <tr className="border-b-2 border-black text-slate-800 font-bold uppercase text-[11px]">
+                  <tr className="border-b-2 border-black text-neutral-800 font-bold uppercase text-[11px]">
                     <th className="text-left py-1">Particulars / Treatment Service</th>
                     <th className="text-right py-1 w-28">Amount (₹)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-neutral-200">
                   {serviceItems.length === 0 ? (
                     <tr>
-                      <td colSpan="2" className="py-4 text-center text-slate-400 font-italic">No treatment services entered</td>
+                      <td colSpan="2" className="py-4 text-center text-neutral-400 italic">No treatment services entered</td>
                     </tr>
                   ) : (
                     serviceItems.map((srv, i) => (
                       <tr key={i}>
-                        <td className="py-2 font-medium">{srv.service || 'Physiotherapy Session'}</td>
-                        <td className="py-2 text-right font-mono font-bold">₹{srv.amount || '0'}</td>
+                        <td className="py-2 font-medium text-neutral-800">{srv.service || 'Physiotherapy Session'}</td>
+                        <td className="py-2 text-right font-mono font-semibold text-neutral-900">₹{srv.amount || '0'}</td>
                       </tr>
                     ))
                   )}
@@ -485,22 +462,22 @@ export default function CreateReceiptPage() {
             </div>
 
             {/* Receipt Footer */}
-            <div className="pt-4 border-t border-slate-300 mt-auto">
+            <div className="pt-4 border-t border-neutral-300 mt-auto">
               <div className="flex justify-between items-end">
                 <div>
-                  <div className="border-2 border-black px-3 py-1 inline-block font-bold text-sm font-mono">
+                  <div className="border-2 border-black px-3 py-1 inline-block font-semibold text-sm font-mono">
                     Total: ₹{totalAmountNum}
                   </div>
-                  <p className="text-[11px] font-semibold text-slate-700 mt-1 italic">
-                    Amount in words: <span className="font-bold text-slate-900">{wordsAmount}</span>
+                  <p className="text-[11px] font-medium text-neutral-700 mt-1 italic">
+                    Amount in words: <span className="font-semibold text-neutral-900">{wordsAmount}</span>
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-1">{form.customText}</p>
+                  <p className="text-[10px] text-neutral-500 mt-1">{form.customText}</p>
                 </div>
 
                 <div className="text-right">
                   <div className="w-44 border-b border-black mb-1 h-12"></div>
-                  <p className="text-[10px] font-bold uppercase text-slate-800">Authorized Signature</p>
-                  <p className="text-[9px] text-slate-500">For {form.docName}</p>
+                  <p className="text-[10px] font-bold uppercase text-neutral-800">Authorized Signature</p>
+                  <p className="text-[9px] text-neutral-500">For {form.docName}</p>
                 </div>
               </div>
             </div>

@@ -8,12 +8,10 @@ import {
   Plus, 
   Download, 
   CheckCircle2, 
-  Clock, 
   Trash2,
   X,
   CreditCard,
   Calendar,
-  User,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -139,11 +137,11 @@ export default function IncomePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       
       {toast && (
-        <div className="fixed top-4 right-4 z-50 px-4 py-3 bg-slate-900 text-emerald-400 border border-slate-700 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-3 bg-foreground text-primary-light border border-foreground/80 rounded-lg shadow-md text-xs font-medium flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" />
           {toast}
         </div>
       )}
@@ -151,24 +149,24 @@ export default function IncomePage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <IndianRupee className="w-6 h-6 text-emerald-600" /> Financial Records
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2 font-serif">
+            <IndianRupee className="w-5 h-5 text-primary" /> Financial Records
           </h1>
-          <p className="text-xs text-slate-500">Track revenue payments, pending amounts & modes</p>
+          <p className="text-xs text-foreground/50">Track revenue payments, pending amounts & modes</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
+            className="px-3.5 py-2 bg-muted hover:bg-muted/70 text-foreground/70 text-xs font-medium rounded-md flex items-center gap-1.5 transition"
           >
-            <Download className="w-4 h-4 text-emerald-700" />
+            <Download className="w-4 h-4 text-primary" />
             Export Income
           </button>
 
           <button
             onClick={() => setModalOpen(true)}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
+            className="px-4 py-2 bg-primary hover:opacity-90 text-white text-xs font-medium rounded-md flex items-center gap-1.5 transition active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             Add Income
@@ -176,31 +174,31 @@ export default function IncomePage() {
         </div>
       </div>
 
-      {/* Metrics Row (Kept only top 2 boxes in side-by-side grid) */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-400">Total Income Collected</p>
-          <p className="text-xl sm:text-2xl font-black text-emerald-600 mt-1">₹{totalRevenue.toLocaleString('en-IN')}</p>
+      {/* Metrics Row — Stacked on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="bg-surface p-4 rounded-lg border border-border">
+          <p className="text-[11px] font-medium uppercase text-foreground/40 tracking-wide">Total Income Collected</p>
+          <p className="text-2xl font-serif text-primary mt-1">₹{totalRevenue.toLocaleString('en-IN')}</p>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-400">Pending Receivables</p>
-          <p className="text-xl sm:text-2xl font-black text-amber-600 mt-1">₹{pendingAmount.toLocaleString('en-IN')}</p>
+        <div className="bg-surface p-4 rounded-lg border border-border">
+          <p className="text-[11px] font-medium uppercase text-foreground/40 tracking-wide">Pending Receivables</p>
+          <p className="text-2xl font-serif text-accent mt-1">₹{pendingAmount.toLocaleString('en-IN')}</p>
         </div>
       </div>
 
-      {/* Filters Bar & Status Tabs (Attached Design Layout) */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+      {/* Filters Bar & Status Tabs */}
+      <div className="bg-surface p-4 rounded-lg border border-border space-y-3">
         
         {/* Search & Payment Mode */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-foreground/30 absolute left-3 top-3" />
             <input
               type="text"
               placeholder="Search receipt #, patient or note..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500 font-medium"
+              className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-md text-xs text-foreground focus:outline-none focus:border-primary font-medium"
             />
           </div>
 
@@ -208,7 +206,7 @@ export default function IncomePage() {
             <select
               value={modeFilter}
               onChange={(e) => setModeFilter(e.target.value)}
-              className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
+              className="p-2 bg-background border border-border rounded-md text-xs font-medium text-foreground focus:outline-none"
             >
               <option value="All">All Modes</option>
               <option value="Online">Online / GPay</option>
@@ -218,55 +216,41 @@ export default function IncomePage() {
           </div>
         </div>
 
-        {/* Status Pill Tabs (Attached Reference Mobile Layout) */}
-        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+        {/* Status Pill Tabs */}
+        <div className="flex items-center justify-between border-t border-border pt-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-            <button
-              onClick={() => setStatusFilter('All')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                statusFilter === 'All'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              ALL <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'All' ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-600'}`}>{income.length}</span>
-            </button>
-
-            <button
-              onClick={() => setStatusFilter('Completed')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                statusFilter === 'Completed'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              COMPLETED <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'Completed' ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-200 text-slate-600'}`}>{income.filter(i => i.status === 'Completed').length}</span>
-            </button>
-
-            <button
-              onClick={() => setStatusFilter('Pending')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                statusFilter === 'Pending'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              PENDING <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'Pending' ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 text-slate-600'}`}>{income.filter(i => i.status === 'Pending').length}</span>
-            </button>
+            {['All', 'Completed', 'Pending'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1.5 rounded-md font-medium transition flex items-center gap-1.5 ${
+                  statusFilter === status
+                    ? 'bg-primary text-white'
+                    : 'bg-foreground/5 text-foreground/50 hover:bg-foreground/10'
+                }`}
+              >
+                {status.toUpperCase()}
+                <span className={`text-[10px] px-1.5 rounded-full ${
+                  statusFilter === status ? 'bg-white/20 text-white' : 'bg-foreground/5 text-foreground/40'
+                }`}>
+                  {status === 'All' ? income.length : income.filter(i => i.status === status).length}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Results Counter */}
-        <div className="text-[11px] text-slate-400 font-medium pt-1">
-          Showing <span className="font-bold text-slate-700">{filteredIncome.length}</span> of <span className="font-bold text-slate-700">{income.length}</span> income records
+        <div className="text-[11px] text-foreground/35 font-medium pt-1">
+          Showing <span className="font-semibold text-foreground">{filteredIncome.length}</span> of <span className="font-semibold text-foreground">{income.length}</span> income records
         </div>
 
       </div>
 
-      {/* Income Table View (Desktop) & Cards (Mobile Attached Design Layout) */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      {/* Income Table View (Desktop) & Cards (Mobile) */}
+      <div className="bg-surface rounded-lg border border-border overflow-hidden">
         {filteredIncome.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-xs">
+          <div className="p-12 text-center text-foreground/30 text-xs">
             No financial income records match your filters.
           </div>
         ) : (
@@ -275,7 +259,7 @@ export default function IncomePage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                  <tr className="bg-background border-b border-border text-foreground/40 font-medium uppercase tracking-wider">
                     <th className="py-3 px-4">Receipt #</th>
                     <th className="py-3 px-4">Date</th>
                     <th className="py-3 px-4">Patient Name</th>
@@ -285,17 +269,17 @@ export default function IncomePage() {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
+                <tbody className="divide-y divide-border font-medium">
                   {paginatedIncome.map((inc) => (
-                    <tr key={inc.id} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-700">{inc.receiptNo}</td>
-                      <td className="py-3 px-4 font-mono text-slate-700">{inc.date}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900">{getPatientName(inc.patientId)}</td>
-                      <td className="py-3 px-4 font-bold text-emerald-700 text-sm">₹{inc.amount}</td>
-                      <td className="py-3 px-4 text-slate-700 font-semibold">{inc.mode}</td>
+                    <tr key={inc.id} className="hover:bg-background/50 transition">
+                      <td className="py-3 px-4 font-mono font-medium text-primary">{inc.receiptNo}</td>
+                      <td className="py-3 px-4 font-mono text-foreground/70">{inc.date}</td>
+                      <td className="py-3 px-4 font-medium text-foreground">{getPatientName(inc.patientId)}</td>
+                      <td className="py-3 px-4 font-semibold text-primary text-sm">₹{inc.amount}</td>
+                      <td className="py-3 px-4 text-foreground/70 font-medium">{inc.mode}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          inc.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                          inc.status === 'Completed' ? 'bg-primary/10 text-primary' : 'bg-accent/15 text-accent'
                         }`}>
                           {inc.status}
                         </span>
@@ -303,7 +287,7 @@ export default function IncomePage() {
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => handleDeleteIncome(inc.id)}
-                          className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded text-[11px] font-semibold"
+                          className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-[11px] font-medium"
                           title="Delete Record"
                         >
                           <Trash2 className="w-3.5 h-3.5 inline" />
@@ -315,59 +299,59 @@ export default function IncomePage() {
               </table>
             </div>
 
-            {/* Mobile Cards View (Exact Reference Attached Image Design Layout) */}
-            <div className="md:hidden divide-y divide-slate-100 bg-slate-50/50 p-2 space-y-3">
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-border bg-background p-2 space-y-2">
               {paginatedIncome.map((inc) => (
-                <div key={inc.id} className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-3">
+                <div key={inc.id} className="bg-surface rounded-lg border border-border p-4 space-y-3">
                   
-                  {/* Subtitle Row: Date & Payment Mode */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pb-1 border-b border-slate-100">
+                  {/* Subtitle Row */}
+                  <div className="flex items-center justify-between text-[11px] text-foreground/35 font-medium pb-1 border-b border-border">
                     <span className="flex items-center gap-1 font-mono">
-                      <Calendar className="w-3 h-3 text-slate-400" />
+                      <Calendar className="w-3 h-3 text-foreground/30" />
                       {inc.date}
                     </span>
-                    <span className="flex items-center gap-1 font-semibold text-slate-600">
-                      <CreditCard className="w-3 h-3 text-slate-400" />
+                    <span className="flex items-center gap-1 font-medium text-foreground/60">
+                      <CreditCard className="w-3 h-3 text-foreground/30" />
                       {inc.mode}
                     </span>
                   </div>
 
-                  {/* Main Title Row: Receipt # + Patient Name + Amount Pill */}
+                  {/* Title Row */}
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md inline-block mb-0.5">
+                      <span className="text-[11px] font-mono font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-sm inline-block mb-0.5">
                         {inc.receiptNo || 'RCPT'}
                       </span>
-                      <h4 className="text-sm font-extrabold text-slate-900 leading-snug">
+                      <h4 className="text-sm font-semibold text-foreground leading-snug">
                         {getPatientName(inc.patientId)}
                       </h4>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-black text-emerald-800 bg-emerald-100 border border-emerald-200/60 block">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-semibold text-primary bg-primary/10 border border-primary/15 block">
                         ₹{inc.amount}
                       </span>
                     </div>
                   </div>
 
-                  {/* Key-Value Details Grid */}
-                  <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100 text-xs space-y-1.5 font-medium">
+                  {/* Key-Value Details */}
+                  <div className="bg-background rounded-md p-3 border border-border text-xs space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-400 font-medium">Payment Mode</span>
-                      <span className="text-slate-800 font-bold">{inc.mode}</span>
+                      <span className="text-foreground/35">Payment Mode</span>
+                      <span className="text-foreground font-medium">{inc.mode}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-400 font-medium">Status</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        inc.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      <span className="text-foreground/35">Status</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                        inc.status === 'Completed' ? 'bg-primary/10 text-primary' : 'bg-accent/15 text-accent'
                       }`}>
                         {inc.status}
                       </span>
                     </div>
                     {inc.note && (
-                      <div className="flex justify-between items-start gap-2 pt-1 border-t border-slate-200/60">
-                        <span className="text-slate-400 font-medium shrink-0">Note</span>
-                        <span className="text-slate-600 text-right italic">{inc.note}</span>
+                      <div className="flex justify-between items-start gap-2 pt-1 border-t border-border">
+                        <span className="text-foreground/35 shrink-0">Note</span>
+                        <span className="text-foreground/60 text-right italic">{inc.note}</span>
                       </div>
                     )}
                   </div>
@@ -376,7 +360,7 @@ export default function IncomePage() {
                   <div className="flex justify-end pt-1">
                     <button
                       onClick={() => handleDeleteIncome(inc.id)}
-                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition flex items-center gap-1"
+                      className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium rounded-md transition flex items-center gap-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Delete Record
                     </button>
@@ -388,8 +372,8 @@ export default function IncomePage() {
 
             {/* Pagination Controls Bar */}
             {filteredIncome.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-slate-100 text-xs bg-slate-50/80">
-                <div className="flex items-center gap-2 text-slate-500 font-medium">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-border text-xs bg-background">
+                <div className="flex items-center gap-2 text-foreground/40 font-medium">
                   <span>Rows:</span>
                   <select
                     value={pageSize}
@@ -397,15 +381,15 @@ export default function IncomePage() {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 font-bold focus:outline-none"
+                    className="px-2 py-1 bg-surface border border-border rounded-md text-foreground font-medium focus:outline-none"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
                     <option value={50}>50</option>
                   </select>
-                  <span className="ml-1 text-[11px]">
-                    Showing <strong className="text-slate-800">{Math.min((currentPage - 1) * pageSize + 1, filteredIncome.length)}</strong>–<strong className="text-slate-800">{Math.min(currentPage * pageSize, filteredIncome.length)}</strong> of <strong className="text-slate-800">{filteredIncome.length}</strong> records
+                  <span className="text-[11px]">
+                    Showing <strong className="text-foreground">{Math.min((currentPage - 1) * pageSize + 1, filteredIncome.length)}</strong>–<strong className="text-foreground">{Math.min(currentPage * pageSize, filteredIncome.length)}</strong> of <strong className="text-foreground">{filteredIncome.length}</strong> records
                   </span>
                 </div>
 
@@ -413,19 +397,19 @@ export default function IncomePage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-700 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition flex items-center gap-1 text-[11px]"
+                    className="px-2.5 py-1.5 bg-surface border border-border rounded-md text-foreground/70 font-medium disabled:opacity-40 hover:bg-foreground/5 transition flex items-center gap-1 text-[11px]"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" /> Prev
                   </button>
 
-                  <span className="px-3 py-1.5 font-bold text-slate-800 bg-white border border-slate-200 rounded-xl text-[11px]">
+                  <span className="px-3 py-1.5 font-medium text-foreground bg-surface border border-border rounded-md text-[11px]">
                     Page {currentPage} of {totalPages}
                   </span>
 
                   <button
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-700 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition flex items-center gap-1 text-[11px]"
+                    className="px-2.5 py-1.5 bg-surface border border-border rounded-md text-foreground/70 font-medium disabled:opacity-40 hover:bg-foreground/5 transition flex items-center gap-1 text-[11px]"
                   >
                     Next <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -438,22 +422,22 @@ export default function IncomePage() {
 
       {/* Add Income Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">Record Income Payment</h3>
-              <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4">
+          <div className="bg-surface w-full max-w-md rounded-lg shadow-xl p-5 space-y-4 border border-border">
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <h3 className="text-base font-semibold text-foreground">Record Income Payment</h3>
+              <button onClick={() => setModalOpen(false)} className="text-foreground/30 hover:text-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddIncome} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Select Patient</label>
+                <label className="block font-medium text-foreground/60 mb-1">Select Patient</label>
                 <select
                   value={formData.patientId}
                   onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold"
+                  className="w-full p-2.5 bg-background border border-border rounded-md text-foreground font-medium"
                   required
                 >
                   <option value="">-- Direct Payment / Select Patient --</option>
@@ -465,24 +449,24 @@ export default function IncomePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Payment Date</label>
+                  <label className="block font-medium text-foreground/60 mb-1">Payment Date</label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Amount (₹)</label>
+                  <label className="block font-medium text-foreground/60 mb-1">Amount (₹)</label>
                   <input
                     type="number"
                     placeholder="1200"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-bold"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground font-semibold"
                     required
                   />
                 </div>
@@ -490,11 +474,11 @@ export default function IncomePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Mode</label>
+                  <label className="block font-medium text-foreground/60 mb-1">Mode</label>
                   <select
                     value={formData.mode}
                     onChange={(e) => setFormData({ ...formData, mode: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   >
                     <option value="Online">Online / GPay</option>
                     <option value="Cash">Cash</option>
@@ -503,11 +487,11 @@ export default function IncomePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Status</label>
+                  <label className="block font-medium text-foreground/60 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                   >
                     <option value="Completed">Completed</option>
                     <option value="Pending">Pending</option>
@@ -516,13 +500,13 @@ export default function IncomePage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Payment Note</label>
+                <label className="block font-medium text-foreground/60 mb-1">Payment Note</label>
                 <input
                   type="text"
                   placeholder="e.g. 5-session lumbar rehab package"
                   value={formData.note}
                   onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800"
+                  className="w-full p-2.5 bg-background border border-border rounded-md text-foreground"
                 />
               </div>
 
@@ -530,13 +514,13 @@ export default function IncomePage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700 rounded-xl"
+                  className="w-1/2 py-2.5 bg-muted hover:bg-muted/80 font-medium text-foreground/70 rounded-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 font-semibold text-white rounded-xl shadow-xs"
+                  className="w-1/2 py-2.5 bg-primary hover:opacity-90 font-medium text-white rounded-md"
                 >
                   Record Payment
                 </button>
